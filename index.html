@@ -823,7 +823,8 @@ function apply(a, from) {
     case "teamNames":
       if (host && Array.isArray(a.val)) S.teamNames = [0, 1].map(i => cleanName(a.val[i]) || S.teamNames[i]);
       return;
-    case "team": { const p = player(v); if (host && p && S.stage === "lobby") p.team = p.team ? 0 : 1; return; }
+    case "team": { const p = player(v); if ((host || from === v) && p && S.stage === "lobby") p.team = p.team ? 0 : 1; return; }
+    case "shuffleTeams": if (host && S.stage === "lobby") splitTeams(S.players); return;
     case "kick": {
       if (!host || v === S.hostId || S.stage !== "lobby") return;
       S.players = S.players.filter(p => p.id !== v);
@@ -835,7 +836,10 @@ function apply(a, from) {
       if (p && n && S.stage === "lobby") { p.name = ""; p.name = uniqueName(n); }
       return;
     }
-    case "start": if (host && S.stage === "lobby" && S.players.length >= minPlayers(S.mode) && S.players.length <= MODES[S.mode].max) startGame(); return;
+    case "start":
+      if (host && S.stage === "lobby" && S.players.length >= minPlayers(S.mode) && S.players.length <= MODES[S.mode].max
+          && !teamProblem(S.mode, S.players, !!S.sets[S.mode].teams && teamsOK(S.mode, S.players.length))) startGame();
+      return;
     case "again": if (host && S.stage === "over") startGame(); return;
     case "lobby": if (host) { S.stage = "lobby"; S.g = null; } return;
     case "drop": if (host && g && S.stage === "play") dropPlayer(v); return;
@@ -1211,6 +1215,13 @@ const peekBox = (secret, label) => `<button type="button" class="peek" aria-pres
 const seg = (k, opts, cur, editable, fmt, off) => `<div class="seg" role="group">${opts.map(o =>
   `<button data-a="set" data-k="${k}" data-v="${o}" aria-pressed="${String(o) === String(cur)}" ${editable && !(off && off(o)) ? "" : "disabled"}>${fmt ? fmt(o) : o}</button>`).join("")}</div>`;
 const teamsOK = (mode, count) => count >= 2 * MODES[mode].teamMin;
+// with teams on, both sides need enough players; returns what's wrong, or ""
+function teamProblem(mode, list, teamsOn) {
+  if (!teamsOn) return "";
+  const b = list.filter(p => p.team === 1).length, a = list.length - b, min = MODES[mode].teamMin;
+  return a < min || b < min ? `Each team needs at least ${min} players` : "";
+}
+function splitTeams(list) { shuffle(list.slice()).forEach((p, i) => p.team = i % 2); }
 function settingsBlock(mode, set, editable, count) {
   const ok = teamsOK(mode, count), teams = !!set.teams && ok;
   const r = [["Play as", seg("teams", [true, false], teams, editable, o => o ? "Two teams" : "Co-op", o => o && !ok)]];
@@ -1227,11 +1238,12 @@ function settingsBlock(mode, set, editable, count) {
   }
   return `<div class="stack">${r.map(([l, c]) => `<div class="row wrap"><span class="eyebrow grow">${l}</span>${c}</div>`).join("")}</div>`;
 }
-function teamNamesBlock(editable) {
+function teamNamesBlock(editable, canShuffle) {
   const row = i => `<div class="row"><span class="teambadge t${i}">${i ? "B" : "A"}</span>${editable
     ? `<input class="inp grow" id="tn-${i}" maxlength="16" autocomplete="off" value="${esc(U.drafts["tn-" + i] ?? teamName(i))}" aria-label="Team ${i ? "B" : "A"} name">`
     : `<span class="grow" style="font-weight:800;font-size:17px">${esc(teamName(i))}</span>`}</div>`;
-  return `<div class="card stack"><div class="row"><span class="eyebrow grow">Team names</span>${editable ? `<button class="ghost" data-a="tnRoll">🎲 New names</button>` : ""}</div>${row(0)}${row(1)}</div>`;
+  return `<div class="card stack"><div class="row"><span class="eyebrow grow">Teams</span>
+    ${canShuffle ? `<button class="ghost" data-a="shuffleTeams">⇄ Shuffle</button>` : ""}${editable ? `<button class="ghost" data-a="tnRoll">🎲 New names</button>` : ""}</div>${row(0)}${row(1)}</div>`;
 }
 function commitTeamNames() {
   const cur = [0, 1].map(teamName);
@@ -1299,14 +1311,15 @@ function setupView() {
     <div class="row"><input class="inp grow" id="newname" maxlength="16" placeholder="Add a name" autocomplete="off" enterkeyhint="done" value="${esc(U.drafts.newname || "")}">
       <button class="ghost on" data-a="addName" style="padding:15px 18px">Add</button></div>
     <div class="plist">${pp.map(p => `<div class="p"><span class="nm">${esc(p.name)}</span>
-      ${teamsOn ? `<button class="teambadge t${p.team || 0}" data-a="swapTeam" data-v="${p.id}">${esc(teamName(p.team ? 1 : 0))}</button>` : ""}
+      ${teamsOn ? `<button class="teambadge t${p.team || 0}" data-a="swapTeam" data-v="${p.id}" aria-label="${esc(p.name)} is on ${esc(teamName(p.team ? 1 : 0))}. Tap to switch.">${esc(teamName(p.team ? 1 : 0))} ⇄</button>` : ""}
       <button class="x" data-a="rmName" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></div>`).join("") || `<div class="faint small center">Add at least ${m.min} players for co-op, ${2 * m.teamMin} for two teams.</div>`}</div>
-    ${teamsOn ? `<div class="faint small">Tap a team badge to switch teams.</div>` : ""}
+    ${teamsOn ? `<div class="faint small">Tap a team to move that player to the other side.</div>` : ""}
     <div class="card">${settingsBlock(k, set, true, pp.length)}</div>
-    ${teamsOn ? teamNamesBlock(true) : ""}
+    ${teamsOn ? teamNamesBlock(true, true) : ""}
     <div class="bottom">
+      ${teamProblem(k, pp, teamsOn) ? `<div class="err">${teamProblem(k, pp, teamsOn)}.</div>` : ""}
       ${tooMany ? `<div class="err">${m.name} supports up to ${m.max} players.</div>` : ""}
-      <button class="cta" data-a="startPass" ${enough && !tooMany ? "" : "disabled"}>${enough ? "Start " + m.name : `Need ${m.min - pp.length} more`}</button>
+      <button class="cta" data-a="startPass" ${enough && !tooMany && !teamProblem(k, pp, teamsOn) ? "" : "disabled"}>${enough ? "Start " + m.name : `Need ${m.min - pp.length} more`}</button>
     </div>
   </section>`;
 }
@@ -1350,16 +1363,19 @@ function lobbyView() {
       <div class="dim" style="line-height:1.4">${m.pitch}</div>
       <hr class="sep"><div class="eyebrow">Quick rules</div>${rulesBlock(S.mode)}
     </div>
-    <div class="row"><span class="eyebrow grow">Players (${n})</span>${teamsOn && host ? `<span class="faint small">Tap a badge to switch teams</span>` : ""}</div>
+    <div class="row"><span class="eyebrow grow">Players (${n})</span>${teamsOn ? `<span class="faint small">${host ? "Tap a team to move a player" : "Tap your team to switch"}</span>` : ""}</div>
     <div class="plist">${S.players.map(p => `<div class="p"><span class="dot ${p.on ? "" : "off"}"></span>
       <span class="nm">${esc(p.name)} ${p.id === S.hostId ? "👑" : ""} ${p.id === ME ? `<span class="you">(you)</span>` : ""}</span>
-      ${teamsOn ? `<button class="teambadge t${p.team || 0}" ${host ? `data-a="team" data-v="${p.id}"` : "disabled"}>${esc(teamName(p.team ? 1 : 0))}</button>` : ""}
+      ${teamsOn ? (host || p.id === ME
+        ? `<button class="teambadge t${p.team || 0}" data-a="team" data-v="${p.id}" aria-label="${esc(p.name)} is on ${esc(teamName(p.team ? 1 : 0))}. Tap to switch.">${esc(teamName(p.team ? 1 : 0))} ⇄</button>`
+        : `<span class="teambadge t${p.team || 0}">${esc(teamName(p.team ? 1 : 0))}</span>`) : ""}
       ${host && p.id !== S.hostId ? `<button class="x" data-a="kick" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button>` : ""}</div>`).join("")}</div>
     <div class="card">${settingsBlock(S.mode, set, host, S.players.length)}</div>
-    ${teamsOn ? teamNamesBlock(host) : ""}
+    ${teamsOn ? teamNamesBlock(host, host) : ""}
     <div class="bottom">
       ${tooMany ? `<div class="err">${m.name} supports up to ${m.max} players. Remove someone or pick another game.</div>` : ""}
-      ${host ? `<button class="cta" data-a="start" ${enough && !tooMany ? "" : "disabled"}>${enough ? "Start " + m.name : `Waiting for ${m.min - n} more player${m.min - n > 1 ? "s" : ""}`}</button>`
+      ${teamProblem(S.mode, S.players, teamsOn) ? `<div class="err">${teamProblem(S.mode, S.players, teamsOn)}.</div>` : ""}
+      ${host ? `<button class="cta" data-a="start" ${enough && !tooMany && !teamProblem(S.mode, S.players, teamsOn) ? "" : "disabled"}>${enough ? "Start " + m.name : `Waiting for ${m.min - n} more player${m.min - n > 1 ? "s" : ""}`}</button>`
              : wait(`Waiting for ${esc(nm(S.hostId))} to start`)}
     </div>
   </section>`;
@@ -1902,9 +1918,11 @@ function handle(a, v, el) {
       return;
     }
     case "rmName": U.pp = U.pp.filter(p => p.id !== v); savePP(); render(); return;
+    case "shuffleTeams": if (!S) { splitTeams(U.pp); render(); } else act({ type: "shuffleTeams" }); return;
     case "swapTeam": { const p = U.pp.find(p => p.id === v); if (p) p.team = p.team ? 0 : 1; savePP(); render(); return; }
     case "startPass": {
       const m = MODES[U.pick]; if (U.pp.length < m.min || U.pp.length > m.max) return;
+      if (teamProblem(U.pick, U.pp, !!U.sets[U.pick].teams && teamsOK(U.pick, U.pp.length))) return;
       commitTeamNames();
       ROLE = "pass"; ME = null;
       S = { v: 0, play: "pass", code: null, mode: U.pick, hostId: null, stage: "lobby", sets: JSON.parse(JSON.stringify(U.sets)), teamNames: U.teamNames.slice(),
