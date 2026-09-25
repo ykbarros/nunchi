@@ -1243,7 +1243,7 @@ function teamNamesBlock(editable, canShuffle) {
     ? `<input class="inp grow" id="tn-${i}" maxlength="16" autocomplete="off" value="${esc(U.drafts["tn-" + i] ?? teamName(i))}" aria-label="Team ${i ? "B" : "A"} name">`
     : `<span class="grow" style="font-weight:800;font-size:17px">${esc(teamName(i))}</span>`}</div>`;
   return `<div class="card stack"><div class="row"><span class="eyebrow grow">Teams</span>
-    ${canShuffle ? `<button class="ghost" data-a="shuffleTeams">⇄ Shuffle</button>` : ""}${editable ? `<button class="ghost" data-a="tnRoll">🎲 New names</button>` : ""}</div>${row(0)}${row(1)}</div>`;
+    ${canShuffle ? `<button class="ghost" data-a="shuffleTeams">🔀 Shuffle</button>` : ""}${editable ? `<button class="ghost" data-a="tnRoll">🎲 New names</button>` : ""}</div>${row(0)}${row(1)}</div>`;
 }
 function commitTeamNames() {
   const cur = [0, 1].map(teamName);
