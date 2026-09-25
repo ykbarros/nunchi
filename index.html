@@ -1573,6 +1573,10 @@ function sheetView() {
   } else if (s.k === "modes") {
     inner = `<div class="eyebrow">Pick a game</div><div class="modes">${Object.keys(MODES).map(k => modeCard(k).replace('data-a="pick"', 'data-a="setMode"')).join("")}</div>
       <button class="link" data-a="close">Cancel</button>`;
+  } else if (s.k === "ask") {
+    inner = `<div class="q" style="font-size:22px;font-weight:800">${esc(s.text)}</div>
+      <button class="cta" data-a="${s.then}" ${s.v ? `data-v="${esc(s.v)}"` : ""}>${esc(s.yes)}</button>
+      <button class="cta alt" data-a="close">Cancel</button>`;
   } else if (s.k === "peek") {
     inner = handoff(nm(s.pid), "Only this person looks:") + peekBox(S.g.nums[s.pid]) + `<button class="cta" data-a="close">Done</button>`;
   }
@@ -1754,6 +1758,7 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && U.sheet) { U.sheet = null; render(); } });
 
+function ask(text, yes, then, v) { U.sheet = { k: "ask", text, yes, then, v }; render(); }
 function handle(a, v, el) {
   switch (a) {
     /* ---- local navigation ---- */
@@ -1789,9 +1794,11 @@ function handle(a, v, el) {
     case "peekFor": U.sheet = { k: "peek", pid: v }; render(); return;
     case "close": case "scrim": U.sheet = null; render(); return;
     case "psyShow": U.psyShow = true; render(); return;
-    case "leave": if (confirm("Leave this room?")) goHome(); return;
-    case "closeRoom": if (confirm("Close the room for everyone?")) goHome(); return;
-    case "endPass": if (confirm("End this game?")) { const k = S.mode; goHome(); U.pick = k; U.screen = "mode"; render(); } return;
+    case "leave": ask("Leave this room?", "Leave", "yesLeave"); return;
+    case "closeRoom": ask("Close the room for everyone?", "Close room", "yesClose"); return;
+    case "endPass": ask("End this game?", "End game", "yesEnd"); return;
+    case "yesLeave": case "yesClose": goHome(); return;
+    case "yesEnd": { const k = S.mode; goHome(); U.pick = k; U.screen = "mode"; render(); return; }
     case "changeGame": { const k = S.mode; goHome(); U.pick = k; U.screen = "home"; render(); return; }
     case "nudge": { const g = S.g; act({ type: "dlMove", v: clamp(g.dial + Number(v), 0, 100) }); return; }
 
@@ -1812,7 +1819,8 @@ function handle(a, v, el) {
       act({ type: "luAns", v, val: raw }); delete U.drafts["ans-" + v]; scrollTo(0, 0); return;
     }
     case "dlClue": act({ type: "dlClue", val: U.drafts.clue || "" }); U.drafts.clue = ""; U.psyShow = false; return;
-    case "drop": if (confirm(`Remove ${nm(v)} from this game?`)) { U.sheet = null; act({ type: "drop", v }); } return;
+    case "drop": ask(`Remove ${nm(v)} from this game?`, "Remove", "yesDrop", v); return;
+    case "yesDrop": U.sheet = null; act({ type: "drop", v }); return;
     case "lobby": U.sheet = null; act({ type: "lobby" }); return;
     case "rkSeen": case "rkDeal": case "dlNext": case "luNext": case "rkNext":
       act({ type: a, v }); scrollTo(0, 0); return;
