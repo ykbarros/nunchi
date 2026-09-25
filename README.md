@@ -4,7 +4,7 @@ Read the room to win the game. A phone-friendly party game with three games in o
 
 - **Top Ten:** answer to match your secret number from 1 to 10, then see if the Captain ranks you right.
 - **Fun Facts:** answer questions about yourselves in secret, then line up by how well you know each other.
-- **Wavelength:** one clue, one hidden target: read the Psychic's mind and turn the dial.
+- **Wavelength:** give a clue that hits the hidden spot on the dial, then see if your team is on your wavelength.
 
 Every game can be played all together or as two teams. Short rules show before you start, and the **?** button brings them back mid-game.
 

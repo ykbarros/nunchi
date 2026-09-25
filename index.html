@@ -163,15 +163,37 @@
   @keyframes pulse{50%{opacity:.25;transform:scale(.7)}}
 
   /* hold to peek */
-  .peek{position:relative;border-radius:24px;min-height:190px;background:var(--panel);border:2px dashed color-mix(in srgb,var(--accent) 55%,transparent);
-    display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;overflow:hidden;cursor:pointer}
-  .peek .cover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--panel);transition:opacity .12s}
-  .peek .cover .big{font-size:40px}
-  .peek .cover b{font-size:16px}
-  .peek .secret{font-family:var(--display);font-weight:900;font-size:120px;line-height:1;color:var(--accent)}
-  .peek.on .cover{opacity:0}
-  .peek.on{border-style:solid;border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--panel))}
+  /* tap to reveal a secret */
+  .peek{position:relative;border-radius:24px;min-height:180px;width:100%;background:color-mix(in srgb,var(--accent) 14%,var(--panel));
+    border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;overflow:hidden;
+    box-shadow:0 12px 30px -16px color-mix(in srgb,var(--accent) 80%,transparent)}
+  .peek:active{transform:scale(.99)}
+  .peek .cover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--accent)}
+  .peek .cover svg{width:44px;height:44px}
+  .peek .cover b{font-family:var(--display);text-transform:uppercase;font-size:20px;letter-spacing:.01em}
+  .peek .secret{display:none;flex-direction:column;align-items:center;gap:2px}
+  .peek .secret .num{font-family:var(--display);font-weight:900;font-size:120px;line-height:1;color:var(--accent)}
+  .peek .secret small{color:var(--ink-dim);font-size:13px;font-weight:700}
+  .peek.on .cover{display:none}
+  .peek.on .secret{display:flex}
+  .peek.on{background:var(--panel)}
 
+  /* captain + theme scale */
+  .capbar{display:flex;align-items:center;gap:12px}
+  .capbar .crown{font-size:34px;line-height:1}
+  .capname{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(28px,9vw,40px);line-height:.95;letter-spacing:-.02em;color:var(--accent);word-break:break-word}
+  .scale2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+  .scale2 div{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--panel-2);font-weight:800;font-size:15px;line-height:1.15}
+  .scale2 div:last-child{justify-content:flex-end;text-align:right}
+  .scale2 b{font-family:var(--display);font-size:30px;color:var(--accent);line-height:1}
+
+  /* drag to reorder */
+  .sortable .slot{touch-action:pan-y;will-change:transform}
+  .sortable .slot.lift{position:relative;z-index:2;box-shadow:0 14px 30px -10px rgba(0,0,0,.7);border-color:var(--accent);transition:none!important}
+  .sortable .slot.shift{transition:transform .15s ease}
+  .grip{margin-left:auto;display:flex;align-items:center;justify-content:center;width:44px;height:40px;margin-right:-6px;border-radius:10px;color:var(--ink-dim);touch-action:none;cursor:grab}
+  .grip:active{cursor:grabbing;color:var(--accent)}
+  .gripglyph{font-weight:900;color:var(--accent)}
   .handoff{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:10px 0}
   .handoff .to{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(40px,13vw,64px);line-height:.9;letter-spacing:-.03em;color:var(--accent);word-break:break-word}
   .handoff .lbl{color:var(--ink-dim);font-size:15px}
@@ -594,8 +616,7 @@ const MODES = {
       "Everyone but the <b>Captain</b> secretly gets a number from 1 to 10.",
       "Act out the theme in a way that matches your number.",
       "The Captain ranks everyone from lowest to highest.",
-      "You lose a heart for each player who has to move to fix the order. <b>1-5-2-3-4</b> costs 1 (just the 5 moves). <b>1-3-2-5-4</b> costs 2. A perfect round wins a heart back.",
-      "In teams, score a point for each player who didn't have to move."
+      "You lose a heart for each player who has to move to fix the order. A perfect round wins a heart back."
     ]
   },
   lineup: {
@@ -604,12 +625,12 @@ const MODES = {
     rules: [
       "Everyone secretly answers a question about themselves.",
       "Take turns placing yourself in the line, lowest to highest.",
-      "Reveal the answers. Each player in the right spot scores a point."
+      "Talk it over and fix the line, then reveal. Each player in the right spot scores a point."
     ]
   },
   dial: {
     name: "Wavelength", color: "var(--m-dial)", min: 2, max: 12, teamMin: 2,
-    pitch: "One clue, one hidden target: read the Psychic's mind and turn the dial.",
+    pitch: "Give a clue that hits the hidden spot on the dial, then see if your team is on your wavelength.",
     rules: [
       "The <b>Psychic</b> secretly sees where the target sits on a spectrum.",
       "They say one clue out loud, and their team turns the dial.",
@@ -649,11 +670,14 @@ const RTC_OK = typeof RTCPeerConnection !== "undefined" || params.get("net") ===
 const NO_RTC = "Rooms don't work in this browser. Open Nunchi in Safari or Chrome to start or join a room.";
 
 const DEFAULTS = {
-  rank:   { teams: false, rounds: 5, hearts: 7 },
+  rank:   { teams: false, rounds: 5, hearts: 8 },
   lineup: { teams: false, rounds: 6 },
   dial:   { teams: true, goal: 10, rounds: 7 }
 };
 const freshSets = () => JSON.parse(JSON.stringify(DEFAULTS));
+// Top Ten heart choices follow the round count: hard / normal / easy
+const heartOpts = r => [r, Math.round(r * 1.5), r * 2];
+const fixHearts = set => { if (!heartOpts(set.rounds).includes(set.hearts)) set.hearts = heartOpts(set.rounds)[1]; };
 const TEAM_POOL = ["Kumquat", "Shenanigans", "Bongo", "Tittle", "Kerfuffle", "Skibidi", "Boingo", "Dave", "Kevin", "Noodle", "Waffles", "Gizmo", "Pickle", "Wobble", "Doink"];
 const drawTeamNames = (not = []) => shuffle(TEAM_POOL.filter(n => !not.includes(n))).slice(0, 2);
 
@@ -663,7 +687,7 @@ let ME = null;     // my player id in a room; null when everyone shares one phon
 let ROLE = null;   // 'pass' | 'host' | 'guest'
 const U = {
   screen: "home", pick: null, err: "", net: "",
-  pp: store.get("nunchi-players", []),          // pass-and-play roster [{id,name,team}]
+  pp: [],                                       // pass-and-play roster [{id,name,team}], fresh each visit
   sets: Object.assign(freshSets(), store.get("nunchi-sets", {})),
   name: store.get("nunchi-name", ""),
   joinCode: (params.get("room") || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4),
@@ -705,7 +729,9 @@ function uniqueName(n) {
 const INIT = {
   rank(roster, set) {
     const two = wantTeams("rank", roster, set);
-    const g = { type: "rank", roster, two, teams: makeTeams(roster, two, MODES.rank.teamMin), at: 0, caps: [0, 0],
+    const teams = makeTeams(roster, two, MODES.rank.teamMin);
+    teams.forEach(t => t.hearts = set.hearts);
+    const g = { type: "rank", roster, two, teams, at: 0, caps: [0, 0],
       round: 1, rounds: set.rounds, hearts: set.hearts, start: set.hearts,
       deck: makeDeck("rank"), di: 0, phase: "theme", nums: {}, seen: {}, order: [], rev: 0, flags: [], delta: 0, ok: 0, applied: false };
     markSeen("rank", g.deck[0]);
@@ -760,9 +786,18 @@ const dialPoints = d => d <= 4 ? 4 : d <= 12 ? 3 : d <= 20 ? 2 : 0;
 // teams take turns, so each team gets `rounds` rounds
 const roundNo = g => g.two ? Math.ceil(g.round / 2) : g.round;
 const turnsDone = g => g.round >= (g.two ? g.rounds * 2 : g.rounds);
+const rankOver = g => turnsDone(g) || (g.two ? g.teams.some(t => t.hearts <= 0) : g.hearts <= 0);
+function moveItem(arr, from, to) {
+  from = Number(from); to = Number(to);
+  if (!(from >= 0 && from < arr.length && to >= 0 && to < arr.length) || from === to) return;
+  arr.splice(to, 0, arr.splice(from, 1)[0]);
+}
+// ranking starts from a shuffled list so the first order gives nothing away
+function rkStartOrder(g) { g.order = shuffle(crew(g).slice()); g.phase = "order"; }
 
 function startGame() {
   const roster = S.players.map(p => p.id);
+  fixHearts(S.sets.rank);
   S.stage = "play";
   S.g = INIT[S.mode](roster, S.sets[S.mode]);
 }
@@ -782,6 +817,7 @@ function apply(a, from) {
     case "set": {
       if (!host || !S.sets[S.mode] || !(a.k in DEFAULTS[S.mode])) return;
       S.sets[S.mode][a.k] = typeof DEFAULTS[S.mode][a.k] === "boolean" ? v === "true" || v === true : Number(v);
+      if (S.mode === "rank" && a.k === "rounds") S.sets.rank.hearts = heartOpts(Number(v))[1];
       return;
     }
     case "teamNames":
@@ -821,11 +857,10 @@ function apply(a, from) {
       case "rkSeen":
         if (g.phase === "deal" && others.includes(v) && may(v)) {
           g.seen[v] = true;
-          if (others.every(p => g.seen[p])) g.phase = "order";
+          if (others.every(p => g.seen[p])) rkStartOrder(g);
         }
         break;
-      case "rkPick": if (g.phase === "order" && may(cap) && others.includes(v) && !g.order.includes(v)) g.order.push(v); break;
-      case "rkUnpick": if (g.phase === "order" && may(cap)) g.order = g.order.filter(p => p !== v); break;
+      case "rkMove": if (g.phase === "order" && may(cap)) moveItem(g.order, a.from, a.to); break;
       case "rkLock":
         if (g.phase === "order" && may(cap) && g.order.length === others.length) {
           scoreOrder(g);
@@ -837,13 +872,14 @@ function apply(a, from) {
           g.rev = v === "all" ? g.order.length : g.rev + 1;
           if (g.rev >= g.order.length) {
             g.rev = g.order.length; g.applied = true;
-            if (g.two) g.teams[g.at].score += g.ok; else g.hearts = clamp(g.hearts + g.delta, 0, g.start + 3);
+            const t = g.two ? g.teams[g.at] : g;
+            t.hearts = clamp(t.hearts + g.delta, 0, g.start + 3);
           }
         }
         break;
       case "rkNext":
         if (g.phase === "reveal" && g.applied) {
-          if (turnsDone(g) || (!g.two && g.hearts <= 0)) { S.stage = "over"; break; }
+          if (rankOver(g)) { S.stage = "over"; break; }
           g.round++; g.caps[g.at]++; if (g.two) g.at = 1 - g.at; nextCard(g);
           g.phase = "theme"; g.nums = {}; g.seen = {}; g.order = []; g.flags = []; g.rev = 0; g.applied = false;
         }
@@ -867,10 +903,12 @@ function apply(a, from) {
         const cur = g.turn[g.ti], pos = Number(v);
         if (g.phase === "place" && cur && may(cur) && pos >= 0 && pos <= g.line.length) {
           g.line.splice(pos, 0, cur); g.ti++;
-          if (g.ti >= g.turn.length) luReveal(g);
+          if (g.ti >= g.turn.length) g.phase = "adjust";
         }
         break;
       }
+      case "luMove": if (g.phase === "adjust" && (ROLE === "pass" || playing(g).includes(from) || from === S.hostId)) moveItem(g.line, a.from, a.to); break;
+      case "luShow": if (g.phase === "adjust") luReveal(g); break;
       case "luNext":
         if (g.phase === "reveal") {
           if (turnsDone(g)) { S.stage = "over"; break; }
@@ -918,7 +956,7 @@ function luStartPlacing(g) {
   const P = playing(g), s = g.leads[g.at] % P.length;
   g.turn = P.slice(s).concat(P.slice(0, s));
   g.line = [g.turn[0]]; g.ti = 1; g.phase = "place";
-  if (g.ti >= g.turn.length) luReveal(g);
+  if (g.ti >= g.turn.length) g.phase = "adjust";
 }
 function luReveal(g) {
   const A = g.ans, L = g.line;
@@ -946,7 +984,7 @@ function dropPlayer(pid) {
     if (!wasCap) g.caps[g.at] = playing(g).indexOf(capPid);
     delete g.nums[pid]; delete g.seen[pid]; g.order = g.order.filter(p => p !== pid);
     if (wasCap && g.phase !== "reveal") { g.phase = "theme"; g.order = []; g.seen = {}; g.nums = {}; }
-    else if (g.phase === "deal" && crew(g).every(p => g.seen[p])) g.phase = "order";
+    else if (g.phase === "deal" && crew(g).every(p => g.seen[p])) rkStartOrder(g);
     else if (g.phase === "reveal") {
       g.rev = 0; g.applied = false; scoreOrder(g);
     }
@@ -961,7 +999,7 @@ function dropPlayer(pid) {
       g.turn = g.turn.filter(p => p !== pid); g.line = g.line.filter(p => p !== pid);
       if (ti > -1 && ti < g.ti) g.ti--;
       if (!g.line.length && g.turn.length) { g.line = [g.turn[0]]; g.ti = Math.max(g.ti, 1); }
-      if (g.ti >= g.turn.length) luReveal(g);
+      if (g.ti >= g.turn.length) g.phase = "adjust";
     }
   } else if (g.type === "dial") {
     g.roster = g.roster.filter(p => p !== pid);
@@ -1166,21 +1204,25 @@ const modeCard = k => {
 const rulesBlock = k => `<ol class="rules">${MODES[k].rules.map(r => `<li><span>${r}</span></li>`).join("")}</ol>`;
 const wait = t => `<div class="wait">${t}</div>`;
 const roleLine = (ic, t) => `<p class="hint">${t}</p>`;
-const peekBox = (secret, label) => `<div class="peek" tabindex="0" role="button" aria-label="Hold to reveal">
-  <div class="secret">${secret}</div>
-  <div class="cover"><span class="big">🙈</span><b>${label || "Press and hold to peek"}</b><span class="faint small">Let go to hide it again</span></div></div>`;
-const seg = (k, opts, cur, editable, fmt) => `<div class="seg" role="group">${opts.map(o =>
-  `<button data-a="set" data-k="${k}" data-v="${o}" aria-pressed="${String(o) === String(cur)}" ${editable ? "" : "disabled"}>${fmt ? fmt(o) : o}</button>`).join("")}</div>`;
-function settingsBlock(mode, set, editable) {
-  const r = [["Play as", seg("teams", [true, false], !!set.teams, editable, o => o ? "Two teams" : "All together")]];
-  const rl = set.teams ? "Rounds per team" : "Rounds";
+const EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const peekBox = (secret, label) => `<button type="button" class="peek" aria-pressed="false">
+  <span class="cover">${EYE}<b>${label || "Tap to see your number"}</b></span>
+  <span class="secret"><span class="num">${secret}</span><small>Tap to hide</small></span></button>`;
+const seg = (k, opts, cur, editable, fmt, off) => `<div class="seg" role="group">${opts.map(o =>
+  `<button data-a="set" data-k="${k}" data-v="${o}" aria-pressed="${String(o) === String(cur)}" ${editable && !(off && off(o)) ? "" : "disabled"}>${fmt ? fmt(o) : o}</button>`).join("")}</div>`;
+const teamsOK = (mode, count) => count >= 2 * MODES[mode].teamMin;
+function settingsBlock(mode, set, editable, count) {
+  const ok = teamsOK(mode, count), teams = !!set.teams && ok;
+  const r = [["Play as", seg("teams", [true, false], teams, editable, o => o ? "Two teams" : "All together", o => o && !ok)]];
+  const rl = teams ? "Rounds per team" : "Rounds";
   if (mode === "rank") {
     r.push([rl, seg("rounds", [3, 5, 8, 10], set.rounds, editable)]);
-    if (!set.teams) r.push(["Hearts", seg("hearts", [5, 7, 9], set.hearts, editable)]);
+    const hs = heartOpts(set.rounds);
+    r.push([teams ? "Hearts per team" : "Hearts", seg("hearts", hs, hs.includes(set.hearts) ? set.hearts : hs[1], editable)]);
   } else if (mode === "lineup") {
     r.push([rl, seg("rounds", [3, 4, 6, 8], set.rounds, editable)]);
   } else {
-    if (set.teams) r.push(["First to", seg("goal", [6, 10, 14], set.goal, editable)]);
+    if (teams) r.push(["First to", seg("goal", [6, 10, 14], set.goal, editable)]);
     else r.push(["Rounds", seg("rounds", [5, 7, 10], set.rounds, editable)]);
   }
   return `<div class="stack">${r.map(([l, c]) => `<div class="row wrap"><span class="eyebrow grow">${l}</span>${c}</div>`).join("")}</div>`;
@@ -1249,18 +1291,18 @@ function modeView() {
 }
 function setupView() {
   const k = U.pick, m = MODES[k], set = U.sets[k], pp = U.pp;
-  const teamsOn = !!set.teams;
+  const teamsOn = !!set.teams && teamsOK(k, pp.length);
   const enough = pp.length >= m.min, tooMany = pp.length > m.max;
   return `<section class="screen">
     <button class="topback" data-a="pick" data-v="${k}">← ${m.name} rules</button>
-    <div class="row"><h2 class="display grow" style="font-size:34px">Who's playing?</h2>${pp.length ? `<button class="link" data-a="clearNames">Clear</button>` : ""}</div>
+    <div class="row"><h2 class="display grow" style="font-size:34px">Who's playing?</h2></div>
     <div class="row"><input class="inp grow" id="newname" maxlength="16" placeholder="Add a name" autocomplete="off" enterkeyhint="done" value="${esc(U.drafts.newname || "")}">
       <button class="ghost on" data-a="addName" style="padding:15px 18px">Add</button></div>
     <div class="plist">${pp.map(p => `<div class="p"><span class="nm">${esc(p.name)}</span>
       ${teamsOn ? `<button class="teambadge t${p.team || 0}" data-a="swapTeam" data-v="${p.id}">${esc(teamName(p.team ? 1 : 0))}</button>` : ""}
       <button class="x" data-a="rmName" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></div>`).join("") || `<div class="faint small center">Add at least ${m.min} players.</div>`}</div>
-    ${teamsOn && pp.length ? `<div class="faint small">Tap a team badge to switch teams.${pp.length < 2 * m.teamMin ? ` Two teams need ${2 * m.teamMin}+ players. Otherwise you'll play all together.` : ""}</div>` : ""}
-    <div class="card">${settingsBlock(k, set, true)}</div>
+    ${teamsOn ? `<div class="faint small">Tap a team badge to switch teams.</div>` : ""}
+    <div class="card">${settingsBlock(k, set, true, pp.length)}</div>
     ${teamsOn ? teamNamesBlock(true) : ""}
     <div class="bottom">
       ${tooMany ? `<div class="err">${m.name} supports up to ${m.max} players.</div>` : ""}
@@ -1295,7 +1337,7 @@ function connectingView() {
 }
 function lobbyView() {
   const m = MODES[S.mode], set = S.sets[S.mode], host = ROLE === "host";
-  const teamsOn = !!set.teams;
+  const teamsOn = !!set.teams && teamsOK(S.mode, S.players.length);
   const n = S.players.length, enough = n >= m.min, tooMany = n > m.max;
   return `<section class="screen">
     <div class="gtop"><span class="eyebrow grow">Room code</span><button class="ghost" data-a="share">Share invite</button>${host ? `<button class="ghost" data-a="closeRoom">Close</button>` : `<button class="ghost" data-a="leave">Leave</button>`}</div>
@@ -1313,8 +1355,7 @@ function lobbyView() {
       <span class="nm">${esc(p.name)} ${p.id === S.hostId ? "👑" : ""} ${p.id === ME ? `<span class="you">(you)</span>` : ""}</span>
       ${teamsOn ? `<button class="teambadge t${p.team || 0}" ${host ? `data-a="team" data-v="${p.id}"` : "disabled"}>${esc(teamName(p.team ? 1 : 0))}</button>` : ""}
       ${host && p.id !== S.hostId ? `<button class="x" data-a="kick" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button>` : ""}</div>`).join("")}</div>
-    ${teamsOn && n < 2 * m.teamMin ? `<div class="faint small">Two teams need ${2 * m.teamMin}+ players. With fewer, you'll play all together.</div>` : ""}
-    <div class="card">${settingsBlock(S.mode, set, host)}</div>
+    <div class="card">${settingsBlock(S.mode, set, host, S.players.length)}</div>
     ${teamsOn ? teamNamesBlock(host) : ""}
     <div class="bottom">
       ${tooMany ? `<div class="err">${m.name} supports up to ${m.max} players. Remove someone or pick another game.</div>` : ""}
@@ -1327,14 +1368,17 @@ function lobbyView() {
 /* ---------- RANK ---------- */
 function rankView() {
   const g = S.g, [theme, lo, hi] = cardOf(g), cap = capId(g), others = crew(g);
-  const themeCard = promptCard(`<div class="t">${esc(theme)}</div>
-    <div class="scale"><span><b>1</b>${esc(lo)}</span><span>${esc(hi)}<b>10</b></span></div>`);
+  const themeCard = promptCard(`<div class="eyebrow">Theme</div><div class="t" style="margin-top:6px">${esc(theme)}</div>
+    <div class="scale2"><div><b>1</b><span>${esc(lo)}</span></div><div><span>${esc(hi)}</span><b>10</b></div></div>`);
+  const isCap = ROLE !== "pass" && ME === cap;
+  const capBar = `<div class="capbar"><span class="crown" aria-hidden="true">👑</span><div class="grow">
+    <div class="eyebrow">Captain${g.two ? " · " + esc(teamName(g.at)) : ""}</div><div class="capname">${isCap ? "You" : esc(nm(cap))}</div></div></div>`;
   let h = g.two ? topbar(`Round ${roundNo(g)}/${g.rounds}`) + scoreboard(g)
                 : topbar(`Round ${g.round}/${g.rounds} · ❤️ ${g.hearts}`);
   if (!inGame()) return h + themeCard + spectator();
 
   if (g.phase === "theme") {
-    h += themeCard + roleLine("", `<b>${esc(nm(cap))}</b> is the Captain${g.two ? " for " + esc(teamName(g.at)) : ""}.`);
+    h += capBar + themeCard;
     if (mine(cap)) h += `<div class="bottom"><button class="ghost" data-a="rkNew">↻ Different theme</button>
       <button class="cta" data-a="rkDeal">Deal secret numbers</button></div>`;
     else h += wait(`${esc(nm(cap))} is picking a theme`);
@@ -1344,35 +1388,30 @@ function rankView() {
     const seenN = others.filter(p => g.seen[p]).length;
     if (ROLE === "pass") {
       const next = others.find(p => !g.seen[p]);
-      return h + handoff(nm(next), "Pass the phone to", `Captain <b>${esc(nm(cap))}</b>, look away while everyone checks their number.`)
-        + peekBox(g.nums[next], `${esc(nm(next))}: press and hold to see your number`)
-        + `<div class="bottom"><button class="cta" data-a="rkSeen" data-v="${next}">Got it, hide it</button>
-           <div class="faint small center">${seenN}/${others.length} players have seen their number</div></div>`;
+      return h + handoff(nm(next), "Pass the phone to", `Only <b>${esc(nm(next))}</b> looks. Everyone else, look away.`)
+        + peekBox(g.nums[next], "Tap to see your number")
+        + `<div class="bottom"><button class="cta" data-a="rkSeen" data-v="${next}">Got it, pass it on</button>
+           <div class="faint small center">${seenN}/${others.length} players have their number</div></div>`;
     }
-    h += themeCard;
+    h += capBar + themeCard;
     if (ME === cap) return h + wait(`Players are checking their numbers (${seenN}/${others.length})`) + hostHelp(others.filter(p => !g.seen[p]), "rkSeen");
-    if (!others.includes(ME)) return h + wait(`${teamName(g.at)} is checking their numbers (${seenN}/${others.length})`);
-    if (!g.seen[ME]) return h + peekBox(g.nums[ME], "Press and hold to see your number") + `<div class="bottom"><button class="cta" data-a="rkSeen" data-v="${ME}">Got it</button></div>`;
-    return h + wait(`Waiting for others (${seenN}/${others.length})`) + hostHelp(others.filter(p => !g.seen[p]), "rkSeen") + peekBox(g.nums[ME], "Forgot? Press and hold");
+    if (!others.includes(ME)) return h + wait(`${esc(teamName(g.at))} is checking their numbers (${seenN}/${others.length})`);
+    if (!g.seen[ME]) return h + peekBox(g.nums[ME], "Tap to see your number") + `<div class="bottom"><button class="cta" data-a="rkSeen" data-v="${ME}">Got it</button></div>`;
+    return h + wait(`Waiting for others (${seenN}/${others.length})`) + hostHelp(others.filter(p => !g.seen[p]), "rkSeen") + peekBox(g.nums[ME], "Tap to see your number again");
   }
   if (g.phase === "order") {
-    h += themeCard;
-    h += roleLine("", `Act out the theme to match your number. <b>${esc(nm(cap))}</b> ranks you lowest to highest.`);
-    const list = `<div class="order"><div class="end">▲ 1 · ${esc(lo)}</div>${g.order.map((p, i) =>
-      `<button class="slot" ${mine(cap) ? `data-a="rkUnpick" data-v="${p}"` : ""}><span class="n">${i + 1}</span><span class="nm">${esc(nm(p))}</span>${mine(cap) ? `<span class="faint">×</span>` : ""}</button>`).join("")
-      || `<div class="faint small center" style="padding:8px">Nobody ranked yet</div>`}<div class="end">▼ 10 · ${esc(hi)}</div></div>`;
-    const left = others.filter(p => !g.order.includes(p));
-    if (mine(cap)) {
-      h += list + (left.length ? `<div class="chips">${left.map(p => `<button class="chip" data-a="rkPick" data-v="${p}">${esc(nm(p))}</button>`).join("")}</div>` : "");
-      h += `<div class="bottom"><button class="cta" data-a="rkLock" ${left.length ? "disabled" : ""}>${left.length ? `Rank ${left.length} more` : "Lock in the order"}</button></div>`;
-    } else {
-      h += list + wait(`${esc(nm(cap))} is ranking everyone`) + (others.includes(ME) ? peekBox(g.nums[ME], "Your number: press and hold") : "");
-    }
+    const canSort = mine(cap);
+    h += capBar + themeCard;
+    h += roleLine("", canSort
+      ? `Everyone acts out the theme to match their number. Drag <span class="gripglyph">≡</span> to rank them, lowest at the top.`
+      : `Act out the theme to match your number. ${esc(nm(cap))} is ranking everyone.`);
+    h += sortList(g.order, "rkMove", canSort, `1 · ${esc(lo)}`, `10 · ${esc(hi)}`);
+    if (canSort) h += `<div class="bottom"><button class="cta" data-a="rkLock">Lock in the order</button></div>`;
+    else if (others.includes(ME)) h += peekBox(g.nums[ME], "Tap to see your number");
     return h;
   }
   if (g.phase === "reveal") {
-    const n = g.order.length;
-    h += promptCard(`<div class="q">${esc(theme)}</div>`);
+    h += promptCard(`<div class="eyebrow">Theme</div><div class="q" style="margin-top:4px">${esc(theme)}</div>`);
     // numbers flip one at a time; right/wrong marks appear once the whole order is known
     h += `<div class="order">${g.order.map((p, i) => {
       const shown = i < g.rev, judged = g.applied;
@@ -1381,18 +1420,25 @@ function rankView() {
     }).join("")}</div>`;
     if (!g.applied) h += `<div class="bottom"><button class="cta" data-a="rkReveal">Reveal next</button><button class="ghost" data-a="rkReveal" data-v="all">Reveal all</button></div>`;
     else {
-      const miss = g.delta < 0 ? -g.delta : 0;
-      const moved = `${miss} player${miss === 1 ? "" : "s"} had to move`;
-      if (g.two) h += `<div class="banner ${miss ? "neutral" : "good"}"><span class="big">+${g.ok}</span>${esc(teamName(g.at))}${miss ? " · " + moved : ""}</div>`;
-      else h += miss ? `<div class="banner bad"><span class="big">−${miss} ❤️</span>${moved}</div>`
-                     : `<div class="banner good"><span class="big">Perfect!</span>+1 heart</div>`;
-      const end = turnsDone(g) || (!g.two && g.hearts <= 0);
-      h += `<div class="bottom"><button class="cta" data-a="rkNext">${end ? "See how you did" : "Next round"}</button></div>`;
+      const miss = g.delta < 0 ? -g.delta : 0, who = g.two ? esc(teamName(g.at)) + " · " : "";
+      h += miss ? `<div class="banner bad"><span class="big">−${miss} ❤️</span>${who}${miss} player${miss === 1 ? "" : "s"} had to move</div>`
+                : `<div class="banner good"><span class="big">Perfect!</span>${who}+1 heart</div>`;
+      h += `<div class="bottom"><button class="cta" data-a="rkNext">${rankOver(g) ? "See how you did" : "Next round"}</button></div>`;
     }
     return h;
   }
   return h;
 }
+// drag-to-reorder list; the ≡ grip moves a row (arrow keys work too)
+function sortList(ids, action, editable, top, bottom) {
+  return `<div class="order sortable" data-act="${action}"><div class="end">▲ ${top}</div>${ids.map((p, i) => {
+    const own = ROLE !== "pass" && p === ME && S.g.type === "lineup" && S.g.ans[p] != null;
+    return `<div class="slot ${own ? "me" : ""}" data-i="${i}"><span class="n">${i + 1}</span><span class="nm">${esc(nm(p))}</span>
+      ${own ? `<span class="val">${esc(S.g.ans[p])}</span>` : ""}
+      ${editable ? `<span class="grip" tabindex="0" role="button" aria-label="Move ${esc(nm(p))}. Use arrow keys.">${GRIP}</span>` : ""}</div>`;
+  }).join("")}<div class="end">▼ ${bottom}</div></div>`;
+}
+const GRIP = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`;
 function hostHelp(pids, type) {
   if (ROLE !== "host") return "";
   const off = pids.filter(p => !online(p));
@@ -1444,6 +1490,14 @@ function lineupView() {
     if (ROLE !== "pass" && g.ans[ME] != null) h += `<div class="faint small center">Your answer: <b>${esc(g.ans[ME])}</b></div>`;
     return h;
   }
+  if (g.phase === "adjust") {
+    const canSort = ROLE === "pass" || playing(g).includes(ME) || ROLE === "host";
+    h += promptCard(`<div class="q" style="font-size:19px">${esc(q)}</div>`);
+    h += roleLine("", canSort ? `Everyone's in. Argue it out and drag <span class="gripglyph">≡</span> to fix the line, then reveal.` : `${esc(teamName(g.at))} is fixing their line.`);
+    h += sortList(g.line, "luMove", canSort, "Lowest", "Highest");
+    if (canSort) h += `<div class="bottom"><button class="cta" data-a="luShow">Reveal answers</button></div>`;
+    return h;
+  }
   if (g.phase === "reveal") {
     const pts = g.flags.filter(Boolean).length, n = g.line.length;
     h += promptCard(`<div class="q" style="font-size:19px">${esc(q)}</div>`);
@@ -1487,7 +1541,7 @@ const teamName = i => ((S && S.teamNames) || U.teamNames)[i] || (i ? "Team B" : 
 // slim team score strip; the team whose turn it is gets an outline
 function scoreboard(g) {
   if (!g.two) return "";
-  return `<div class="scores">${g.teams.map((t, i) => `<span class="sc-pill t${i} ${i === g.at && S.stage === "play" ? "act" : ""}"><span class="tn">${esc(teamName(i))}</span><b>${t.score}</b></span>`).join("")}</div>`;
+  return `<div class="scores">${g.teams.map((t, i) => `<span class="sc-pill t${i} ${i === g.at && S.stage === "play" ? "act" : ""}"><span class="tn">${esc(teamName(i))}</span><b>${g.type === "rank" ? "❤️ " + t.hearts : t.score}</b></span>`).join("")}</div>`;
 }
 function dialView() {
   const g = S.g, [l, r] = cardOf(g), psy = psyId(g);
@@ -1544,7 +1598,7 @@ function overView() {
   const g = S.g, m = MODES[S.mode];
   let head = "", sub = "", good = true;
   if (g.two) {
-    const [a, b] = g.teams.map(t => t.score);
+    const [a, b] = g.teams.map(t => g.type === "rank" ? t.hearts : t.score);
     head = a === b ? "It's a tie!" : `${teamName(a > b ? 0 : 1)} wins!`;
     sub = `${a} – ${b}`;
   } else if (g.type === "rank") {
@@ -1627,20 +1681,68 @@ function render() {
   lastKey = key;
   if (keep) { const el = document.getElementById(keep.id); if (el) { el.focus({ preventScroll: true }); try { el.setSelectionRange(keep.s, keep.e); } catch (e) {} } }
   layer.innerHTML = sheetView();
-  wirePeeks(); wireDial();
+  wirePeeks(); wireDial(); wireSort();
   if (S && S.stage === "over" && !U.cele) { U.cele = true; const g = S.g; if ((g.type === "rank" && g.hearts > 0) || g.type !== "rank") confetti(); }
   if (!S || S.stage !== "over") U.cele = false;
 }
 function wirePeeks() {
-  document.querySelectorAll(".peek").forEach(el => {
-    const on = e => { e.preventDefault(); el.classList.add("on"); };
-    const off = () => el.classList.remove("on");
-    el.addEventListener("pointerdown", on);
-    ["pointerup", "pointerleave", "pointercancel", "blur"].forEach(t => el.addEventListener(t, off));
-    el.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); el.classList.add("on"); } });
-    el.addEventListener("keyup", off);
-    el.addEventListener("contextmenu", e => e.preventDefault());
+  document.querySelectorAll(".peek").forEach(el => el.addEventListener("click", () => {
+    const on = el.classList.toggle("on"); el.setAttribute("aria-pressed", String(on));
+  }));
+}
+// drag the ≡ grip to reorder a .sortable list; arrow keys move one step
+function wireSort() {
+  document.querySelectorAll(".sortable").forEach(list => {
+    const type = list.dataset.act;
+    const rows = () => [...list.querySelectorAll(".slot")];
+    list.querySelectorAll(".grip").forEach(grip => {
+      const row = grip.closest(".slot"), from = Number(row.dataset.i);
+      grip.addEventListener("keydown", e => {
+        const d = e.key === "ArrowUp" ? -1 : e.key === "ArrowDown" ? 1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        const to = clamp(from + d, 0, rows().length - 1);
+        if (to !== from) { U.refocus = { type, i: to }; act({ type, from, to }); }
+      });
+      grip.addEventListener("pointerdown", e => {
+        e.preventDefault();
+        const all = rows(), step = row.offsetHeight + 6;
+        let to = from;
+        U.dragging = true; row.classList.add("lift");
+        all.forEach(r => r !== row && r.classList.add("shift"));
+        try { grip.setPointerCapture(e.pointerId); } catch (x) {}
+        const y0 = e.clientY;
+        const move = ev => {
+          const dy = ev.clientY - y0;
+          row.style.transform = `translateY(${dy}px)`;
+          to = clamp(from + Math.round(dy / step), 0, all.length - 1);
+          all.forEach((r, k) => {
+            if (r === row) return;
+            const shift = from < to && k > from && k <= to ? -step : from > to && k < from && k >= to ? step : 0;
+            r.style.transform = shift ? `translateY(${shift}px)` : "";
+          });
+        };
+        const up = () => {
+          grip.removeEventListener("pointermove", move);
+          grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up);
+          U.dragging = false;
+          if (to !== from) {
+            // guests see the move right away; the host's copy follows a moment later
+            if (ROLE === "guest") moveItem(type === "rkMove" ? S.g.order : S.g.line, from, to);
+            act({ type, from, to });
+          }
+          if (U.pendingRender || to !== from) { U.pendingRender = false; render(); }
+          else { row.classList.remove("lift"); all.forEach(r => { r.style.transform = ""; r.classList.remove("shift"); }); }
+        };
+        grip.addEventListener("pointermove", move);
+        grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+      });
+    });
   });
+  if (U.refocus) {
+    const el = document.querySelector(`.sortable[data-act="${U.refocus.type}"] .slot[data-i="${U.refocus.i}"] .grip`);
+    if (el) el.focus(); U.refocus = null;
+  }
 }
 let lastSend = 0, sendTimer = null;
 function sendDial(p) {
@@ -1710,7 +1812,7 @@ async function share() {
   try { await navigator.clipboard.writeText(url); toast("Invite link copied"); }
   catch (e) { prompt("Copy this link:", url); }
 }
-function savePP() { store.set("nunchi-players", U.pp); }
+function savePP() {}
 function addName() {
   const n = cleanName(U.drafts.newname);
   if (!n) return;
@@ -1792,8 +1894,6 @@ function handle(a, v, el) {
     case "goHost": U.screen = "host"; U.err = ""; render(); scrollTo(0, 0); return;
     case "goJoin": U.screen = "join"; U.err = ""; render(); return;
     case "addName": addName(); return;
-    case "clearNames": ask("Clear everyone from the list?", "Clear list", "yesClear"); return;
-    case "yesClear": U.pp = []; savePP(); U.sheet = null; render(); return;
     case "tnRoll": {
       const names = drawTeamNames([0, 1].map(teamName));
       delete U.drafts["tn-0"]; delete U.drafts["tn-1"];
@@ -1840,6 +1940,7 @@ function handle(a, v, el) {
       if (!S) {
         const k = el.dataset.k, d = DEFAULTS[U.pick][k];
         U.sets[U.pick][k] = typeof d === "boolean" ? v === "true" : Number(v);
+        if (U.pick === "rank" && k === "rounds") U.sets.rank.hearts = heartOpts(Number(v))[1];
         store.set("nunchi-sets", U.sets); render(); return;
       }
       act({ type: "set", k: el.dataset.k, v }); return;
