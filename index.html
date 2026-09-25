@@ -1311,7 +1311,7 @@ function setupView() {
     <div class="row"><input class="inp grow" id="newname" maxlength="16" placeholder="Add a name" autocomplete="off" enterkeyhint="done" value="${esc(U.drafts.newname || "")}">
       <button class="ghost on" data-a="addName" style="padding:15px 18px">Add</button></div>
     <div class="plist">${pp.map(p => `<div class="p"><span class="nm">${esc(p.name)}</span>
-      ${teamsOn ? `<button class="teambadge t${p.team || 0}" data-a="swapTeam" data-v="${p.id}" aria-label="${esc(p.name)} is on ${esc(teamName(p.team ? 1 : 0))}. Tap to switch.">${esc(teamName(p.team ? 1 : 0))} ⇄</button>` : ""}
+      ${teamsOn ? `<button class="teambadge t${p.team || 0}" data-a="swapTeam" data-v="${p.id}" aria-label="${esc(p.name)} is on ${esc(teamName(p.team ? 1 : 0))}. Tap to switch.">${esc(teamName(p.team ? 1 : 0))} 🔀</button>` : ""}
       <button class="x" data-a="rmName" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></div>`).join("") || `<div class="faint small center">Add at least ${m.min} players for co-op, ${2 * m.teamMin} for two teams.</div>`}</div>
     ${teamsOn ? `<div class="faint small">Tap a team to move that player to the other side.</div>` : ""}
     <div class="card">${settingsBlock(k, set, true, pp.length)}</div>
@@ -1367,7 +1367,7 @@ function lobbyView() {
     <div class="plist">${S.players.map(p => `<div class="p"><span class="dot ${p.on ? "" : "off"}"></span>
       <span class="nm">${esc(p.name)} ${p.id === S.hostId ? "👑" : ""} ${p.id === ME ? `<span class="you">(you)</span>` : ""}</span>
       ${teamsOn ? (host || p.id === ME
-        ? `<button class="teambadge t${p.team || 0}" data-a="team" data-v="${p.id}" aria-label="${esc(p.name)} is on ${esc(teamName(p.team ? 1 : 0))}. Tap to switch.">${esc(teamName(p.team ? 1 : 0))} ⇄</button>`
+        ? `<button class="teambadge t${p.team || 0}" data-a="team" data-v="${p.id}" aria-label="${esc(p.name)} is on ${esc(teamName(p.team ? 1 : 0))}. Tap to switch.">${esc(teamName(p.team ? 1 : 0))} 🔀</button>`
         : `<span class="teambadge t${p.team || 0}">${esc(teamName(p.team ? 1 : 0))}</span>`) : ""}
       ${host && p.id !== S.hostId ? `<button class="x" data-a="kick" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button>` : ""}</div>`).join("")}</div>
     <div class="card">${settingsBlock(S.mode, set, host, S.players.length)}</div>
