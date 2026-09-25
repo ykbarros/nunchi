@@ -2,7 +2,7 @@
 
 Read the room to win the game. A phone-friendly party game with three games in one:
 
-- **Top Ten:** answer to match your secret number from 1 to 10, then see if the Captain ranks you right.
+- **Top Ten:** act out the theme to match your secret number from 1 to 10, then see if the Captain ranks you right.
 - **Fun Facts:** answer questions about yourselves in secret, then line up by how well you know each other.
 - **Wavelength:** give a clue that hits the hidden spot on the dial, then see if your team is on your wavelength.
 
