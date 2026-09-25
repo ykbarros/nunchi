@@ -6,7 +6,7 @@ Read the room to win the game. A phone-friendly party game with three games in o
 - **Fun Facts:** answer questions about yourselves in secret, then line up by how well you know each other.
 - **Wavelength:** give a clue that hits the hidden spot on the dial, then see if your team is on your wavelength.
 
-Every game can be played all together or as two teams. Short rules show before you start, and the **?** button brings them back mid-game.
+Every game can be played co-op or as two teams. Short rules show before you start, and the **?** button brings them back mid-game.
 
 ## Two ways to play
 - **One phone:** pass it around. Secrets hide behind press-and-hold peeks.

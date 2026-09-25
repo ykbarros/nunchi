@@ -1213,7 +1213,7 @@ const seg = (k, opts, cur, editable, fmt, off) => `<div class="seg" role="group"
 const teamsOK = (mode, count) => count >= 2 * MODES[mode].teamMin;
 function settingsBlock(mode, set, editable, count) {
   const ok = teamsOK(mode, count), teams = !!set.teams && ok;
-  const r = [["Play as", seg("teams", [true, false], teams, editable, o => o ? "Two teams" : "All together", o => o && !ok)]];
+  const r = [["Play as", seg("teams", [true, false], teams, editable, o => o ? "Two teams" : "Co-op", o => o && !ok)]];
   const rl = teams ? "Rounds per team" : "Rounds";
   if (mode === "rank") {
     r.push([rl, seg("rounds", [3, 5, 8, 10], set.rounds, editable)]);
@@ -1300,7 +1300,7 @@ function setupView() {
       <button class="ghost on" data-a="addName" style="padding:15px 18px">Add</button></div>
     <div class="plist">${pp.map(p => `<div class="p"><span class="nm">${esc(p.name)}</span>
       ${teamsOn ? `<button class="teambadge t${p.team || 0}" data-a="swapTeam" data-v="${p.id}">${esc(teamName(p.team ? 1 : 0))}</button>` : ""}
-      <button class="x" data-a="rmName" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></div>`).join("") || `<div class="faint small center">Add at least ${m.min} players.</div>`}</div>
+      <button class="x" data-a="rmName" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></div>`).join("") || `<div class="faint small center">Add at least ${m.min} players for co-op, ${2 * m.teamMin} for two teams.</div>`}</div>
     ${teamsOn ? `<div class="faint small">Tap a team badge to switch teams.</div>` : ""}
     <div class="card">${settingsBlock(k, set, true, pp.length)}</div>
     ${teamsOn ? teamNamesBlock(true) : ""}
