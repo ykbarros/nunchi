@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0d0e16">
-<meta name="description" content="Nunchi: a party game about reading the room. Rank, Line Up and Dial modes, on one phone or in an online room.">
+<meta name="description" content="Nunchi: read the room to win the game. Top Ten, Fun Facts and Wavelength, on one phone or with everyone on their own.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0e16'/%3E%3Cpath d='M10 44a22 22 0 0 1 44 0' fill='none' stroke='%23ff3d8b' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M32 44 45 24' stroke='%23f4f5fb' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='44' r='5' fill='%23f4f5fb'/%3E%3C/svg%3E">
 <style>
   :root{
@@ -70,16 +70,14 @@
 
   /* mode cards */
   .modes{display:flex;flex-direction:column;gap:12px}
-  .mode{position:relative;overflow:hidden;border-radius:22px;padding:18px 18px 16px 22px;background:var(--panel);
-    border:1px solid var(--line);text-align:left;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;
+  .mode{position:relative;overflow:hidden;border-radius:22px;padding:18px 18px 18px 22px;background:var(--panel);
+    border:1px solid var(--line);text-align:left;display:flex;flex-direction:column;gap:6px;
     transition:transform .12s ease}
   .mode:active{transform:scale(.98)}
   .mode .swatch{position:absolute;inset:0 auto 0 0;width:7px;background:var(--mc)}
   .mode .blob{position:absolute;top:-50px;right:-40px;width:150px;height:150px;border-radius:50%;background:var(--mc);opacity:.16;filter:blur(6px)}
   .mode .name{font-family:var(--display);font-weight:900;font-size:30px;letter-spacing:-.03em;text-transform:uppercase;color:var(--mc);position:relative;line-height:1}
-  .mode .like{position:relative;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);font-weight:700;align-self:start;padding-top:6px;text-align:right}
-  .mode .pitch{grid-column:1/-1;position:relative;color:var(--ink);font-size:15px;line-height:1.35}
-  .mode .meta{grid-column:1/-1;position:relative;display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .mode .pitch{position:relative;color:var(--ink);font-size:15px;line-height:1.35}
   .pill{font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:4px 9px;border-radius:999px;background:var(--panel-2);color:var(--ink-dim);border:1px solid var(--line)}
 
   /* buttons */
@@ -111,8 +109,6 @@
   .rules li{counter-increment:r;display:grid;grid-template-columns:30px 1fr;gap:10px;line-height:1.4;font-size:15px}
   .rules li::before{content:counter(r);width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
     font-family:var(--display);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center}
-  .example{font-size:14px;line-height:1.45;color:var(--ink-dim);border-left:3px solid var(--accent);padding:2px 0 2px 12px}
-  .example b{color:var(--ink)}
 
   /* inputs */
   .field{display:flex;flex-direction:column;gap:6px}
@@ -598,43 +594,32 @@ for (const k in DECK) DECK[k] = DECK[k].split("\n").map(s => s.trim()).filter(Bo
 
 const MODES = {
   rank: {
-    name: "Rank", like: "Top Ten-style", color: "var(--m-rank)",
-    pitch: "Everyone secretly gets a number from 1 to 10. Answer the theme to match it, and the Captain ranks you.",
-    meta: ["Co-op", "3–11 players", "~20 min"], min: 3, max: 11,
+    name: "Top Ten", color: "var(--m-rank)", min: 3, max: 11, teamMin: 3,
+    pitch: "Answer to match your secret number from 1 to 10, then see if the Captain ranks you right.",
     rules: [
-      "One player is the <b>Captain</b> (it rotates each round). Everyone else secretly gets a <b>number from 1 to 10</b>. Nobody shares a number.",
-      "A theme appears with a scale, e.g. <b>Superpowers: 1 = lamest, 10 = coolest</b>.",
-      "Everyone says an answer out loud that fits their number. Don't say the number!",
-      "The Captain puts players in order from lowest to highest. <b>Each player out of order costs the team a heart.</b> A perfect round wins a heart back.",
-      "Finish every round with at least one heart left and you all win."
-    ],
-    example: "Theme: <b>Superpowers</b>. The 2 says <i>“talking to pigeons”</i>. The 9 says <i>“teleporting anywhere”</i>. The Captain puts the 2 first."
+      "Everyone but the <b>Captain</b> secretly gets a number from 1 to 10.",
+      "Answer the theme out loud to match your number.",
+      "The Captain ranks everyone from lowest to highest.",
+      "Each player out of order costs a heart. In teams, each player in the right spot scores a point."
+    ]
   },
   lineup: {
-    name: "Line Up", like: "Fun Facts-style", color: "var(--m-lineup)",
-    pitch: "Answer a question about yourself in secret, then line up from lowest to highest by how well you know each other.",
-    meta: ["Co-op", "3–12 players", "~20 min"], min: 3, max: 12,
+    name: "Fun Facts", color: "var(--m-lineup)", min: 3, max: 12, teamMin: 2,
+    pitch: "Answer questions about yourselves in secret, then line up by how well you know each other.",
     rules: [
-      "A question about you appears, like <b>How many unread emails do you have?</b>",
-      "Everyone secretly enters their <b>real answer</b>.",
-      "One at a time, place yourself in the line from <b>lowest to highest</b>. Talk it out. Bluffing is bad teamwork!",
-      "Answers are revealed. <b>Everyone in the right spot scores a point for the team.</b>",
-      "Play all the rounds and see how well your group really knows each other."
-    ],
-    example: "Sam places first. Priya knows she has 4,000 unread emails, so she goes <b>after</b> Sam. Jo has zero, so Jo goes <b>first</b>."
+      "Everyone secretly answers a question about themselves.",
+      "Take turns placing yourself in the line, lowest to highest.",
+      "Reveal the answers. Each player in the right spot scores a point."
+    ]
   },
   dial: {
-    name: "Dial", like: "Wavelength-style", color: "var(--m-dial)",
-    pitch: "A hidden target sits somewhere on a spectrum. One clue from the Psychic, then the team turns the dial.",
-    meta: ["Teams or co-op", "2–12 players", "~30 min"], min: 2, max: 12,
+    name: "Wavelength", color: "var(--m-dial)", min: 2, max: 12, teamMin: 2,
+    pitch: "One clue, one hidden target: read the Psychic's mind and turn the dial.",
     rules: [
-      "A spectrum appears, like <b>Hot ↔ Cold</b>. A <b>hidden target</b> sits somewhere on the dial.",
-      "The <b>Psychic</b> (it rotates) secretly sees the target and gives <b>one clue</b> that belongs at that spot on the spectrum.",
-      "Their team talks it out and turns the dial to where they think the target is.",
-      "Bullseye = <b>4</b>, close = <b>3</b>, nearby = <b>2</b>. With two teams, the other team guesses whether the target is <b>left or right</b> of the dial for 1 bonus point.",
-      "Teams: first to <b>10</b> wins. All together: score as much as you can in 7 rounds."
-    ],
-    example: "Spectrum: <b>Hot ↔ Cold</b>. The target is near Cold, so the Psychic says <i>“a snow day”</i>. Everyone turns the dial toward Cold."
+      "The <b>Psychic</b> secretly sees where the target sits on a spectrum.",
+      "They give one clue, and their team turns the dial.",
+      "Score 4, 3 or 2 by how close you land. The other team can guess left or right for 1 point."
+    ]
   }
 };
 </script>
@@ -665,10 +650,12 @@ const cleanName = n => String(n || "").replace(/\s+/g, " ").trim().slice(0, 16);
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ";
 const newCode = () => Array.from({ length: 4 }, () => CODE_CHARS[rnd(CODE_CHARS.length)]).join("");
 const PREFIX = "nunchi-v1-";
+const RTC_OK = typeof RTCPeerConnection !== "undefined" || params.get("net") === "local";
+const NO_RTC = "Rooms don't work in this browser. Open Nunchi in Safari or Chrome to start or join a room.";
 
 const DEFAULTS = {
-  rank:   { rounds: 5, hearts: 7 },
-  lineup: { rounds: 6 },
+  rank:   { teams: false, rounds: 5, hearts: 7 },
+  lineup: { teams: false, rounds: 6 },
   dial:   { teams: true, goal: 10, rounds: 7 }
 };
 const freshSets = () => JSON.parse(JSON.stringify(DEFAULTS));
@@ -719,37 +706,47 @@ function uniqueName(n) {
 /* ================= game setup ================= */
 const INIT = {
   rank(roster, set) {
-    const g = { type: "rank", roster, round: 1, rounds: set.rounds, hearts: set.hearts, start: set.hearts,
-      cap: 0, deck: makeDeck("rank"), di: 0, phase: "theme", nums: {}, seen: {}, order: [], rev: 0, flags: [], delta: 0, applied: false };
+    const two = wantTeams("rank", roster, set);
+    const g = { type: "rank", roster, two, teams: makeTeams(roster, two, MODES.rank.teamMin), at: 0, caps: [0, 0],
+      round: 1, rounds: set.rounds, hearts: set.hearts, start: set.hearts,
+      deck: makeDeck("rank"), di: 0, phase: "theme", nums: {}, seen: {}, order: [], rev: 0, flags: [], delta: 0, ok: 0, applied: false };
     markSeen("rank", g.deck[0]);
     return g;
   },
   lineup(roster, set) {
-    const g = { type: "lineup", roster, round: 1, rounds: set.rounds, deck: makeDeck("lineup"), di: 0, phase: "answer",
-      ans: {}, line: [], turn: [], ti: 0, lead: 0, flags: [], score: 0, possible: 0 };
+    const two = wantTeams("lineup", roster, set);
+    const g = { type: "lineup", roster, two, teams: makeTeams(roster, two, MODES.lineup.teamMin), at: 0, leads: [0, 0],
+      round: 1, rounds: set.rounds, deck: makeDeck("lineup"), di: 0, phase: "answer",
+      ans: {}, line: [], turn: [], ti: 0, flags: [], score: 0, possible: 0 };
     markSeen("lineup", g.deck[0]);
     return g;
   },
   dial(roster, set) {
-    const two = !!set.teams && roster.length >= 4;
-    let teams;
-    if (two) {
-      let a = roster.filter(id => (player(id).team || 0) === 0), b = roster.filter(id => player(id).team === 1);
-      if (a.length < 2 || b.length < 2) { a = roster.filter((_, i) => i % 2 === 0); b = roster.filter((_, i) => i % 2 === 1); }
-      teams = [{ ids: a, score: 0 }, { ids: b, score: 0 }];
-    } else teams = [{ ids: roster.slice(), score: 0 }];
-    const g = { type: "dial", roster, two, teams, at: 0, psy: [0, 0], round: 1, rounds: set.rounds, goal: set.goal,
+    const two = wantTeams("dial", roster, set);
+    const g = { type: "dial", roster, two, teams: makeTeams(roster, two, MODES.dial.teamMin), at: 0, psy: [0, 0], round: 1, rounds: set.rounds, goal: set.goal,
       deck: makeDeck("dial"), di: 0, phase: "peek", target: randTarget(), dial: 50, clue: "", counter: null, pts: 0, bonus: 0 };
     markSeen("dial", g.deck[0]);
     return g;
   }
 };
+const wantTeams = (mode, roster, set) => !!set.teams && roster.length >= 2 * MODES[mode].teamMin;
+function makeTeams(roster, two, min) {
+  if (!two) return [{ ids: roster.slice(), score: 0 }];
+  let a = roster.filter(id => (player(id).team || 0) === 0), b = roster.filter(id => player(id).team === 1);
+  if (a.length < min || b.length < min) { a = roster.filter((_, i) => i % 2 === 0); b = roster.filter((_, i) => i % 2 === 1); }
+  return [{ ids: a, score: 0 }, { ids: b, score: 0 }];
+}
 const randTarget = () => 3 + rnd(95);
-const capId = g => g.roster[g.cap % g.roster.length];
-const crew = g => g.roster.filter(p => p !== capId(g));
+// who is playing this round: the active team, or everyone
+const playing = g => g.two ? g.teams[g.at].ids : g.roster;
+const capId = g => { const t = playing(g); return t[g.caps[g.at] % t.length]; };
+const crew = g => playing(g).filter(p => p !== capId(g));
 const psyId = g => { const t = g.teams[g.at]; return t.ids[g.psy[g.at] % t.ids.length]; };
 const guessers = g => (g.two ? g.teams[g.at].ids : g.roster).filter(p => p !== psyId(g));
 const dialPoints = d => d <= 4 ? 4 : d <= 12 ? 3 : d <= 20 ? 2 : 0;
+// teams take turns, so each team gets `rounds` rounds
+const roundNo = g => g.two ? Math.ceil(g.round / 2) : g.round;
+const turnsDone = g => g.round >= (g.two ? g.rounds * 2 : g.rounds);
 
 function startGame() {
   const roster = S.players.map(p => p.id);
@@ -818,20 +815,23 @@ function apply(a, from) {
           let hi = 0;
           g.flags = g.order.map(p => { const n = g.nums[p], ok = n > hi; if (ok) hi = n; return ok; });
           const miss = g.flags.filter(f => !f).length;
-          g.delta = miss ? -miss : 1;
+          g.delta = miss ? -miss : 1; g.ok = g.flags.length - miss;
           g.rev = 0; g.applied = false; g.phase = "reveal";
         }
         break;
       case "rkReveal":
         if (g.phase === "reveal" && !g.applied) {
           g.rev = v === "all" ? g.order.length : g.rev + 1;
-          if (g.rev >= g.order.length) { g.rev = g.order.length; g.hearts = clamp(g.hearts + g.delta, 0, g.start + 3); g.applied = true; }
+          if (g.rev >= g.order.length) {
+            g.rev = g.order.length; g.applied = true;
+            if (g.two) g.teams[g.at].score += g.ok; else g.hearts = clamp(g.hearts + g.delta, 0, g.start + 3);
+          }
         }
         break;
       case "rkNext":
         if (g.phase === "reveal" && g.applied) {
-          if (g.hearts <= 0 || g.round >= g.rounds) { S.stage = "over"; break; }
-          g.round++; g.cap = (g.cap + 1) % g.roster.length; nextCard(g);
+          if (turnsDone(g) || (!g.two && g.hearts <= 0)) { S.stage = "over"; break; }
+          g.round++; g.caps[g.at]++; if (g.two) g.at = 1 - g.at; nextCard(g);
           g.phase = "theme"; g.nums = {}; g.seen = {}; g.order = []; g.flags = []; g.rev = 0; g.applied = false;
         }
         break;
@@ -844,9 +844,9 @@ function apply(a, from) {
     switch (a.type) {
       case "luAns": {
         const val = Number(String(a.val).replace(/,/g, ""));
-        if (g.phase === "answer" && g.roster.includes(v) && may(v) && isFinite(val)) {
+        if (g.phase === "answer" && playing(g).includes(v) && may(v) && isFinite(val)) {
           g.ans[v] = val;
-          if (g.roster.every(p => g.ans[p] != null)) luStartPlacing(g);
+          if (playing(g).every(p => g.ans[p] != null)) luStartPlacing(g);
         }
         break;
       }
@@ -860,8 +860,8 @@ function apply(a, from) {
       }
       case "luNext":
         if (g.phase === "reveal") {
-          if (g.round >= g.rounds) { S.stage = "over"; break; }
-          g.round++; g.lead++; nextCard(g);
+          if (turnsDone(g)) { S.stage = "over"; break; }
+          g.round++; g.leads[g.at]++; if (g.two) g.at = 1 - g.at; nextCard(g);
           g.phase = "answer"; g.ans = {}; g.line = []; g.turn = []; g.ti = 0; g.flags = [];
         }
         break;
@@ -902,15 +902,17 @@ function apply(a, from) {
   }
 }
 function luStartPlacing(g) {
-  const n = g.roster.length, s = g.lead % n;
-  g.turn = g.roster.slice(s).concat(g.roster.slice(0, s));
+  const P = playing(g), s = g.leads[g.at] % P.length;
+  g.turn = P.slice(s).concat(P.slice(0, s));
   g.line = [g.turn[0]]; g.ti = 1; g.phase = "place";
   if (g.ti >= g.turn.length) luReveal(g);
 }
 function luReveal(g) {
   const A = g.ans, L = g.line;
   g.flags = L.map((p, i) => L.slice(0, i).every(q => A[q] <= A[p]) && L.slice(i + 1).every(q => A[q] >= A[p]));
-  g.score += g.flags.filter(Boolean).length; g.possible += L.length; g.phase = "reveal";
+  const pts = g.flags.filter(Boolean).length;
+  if (g.two) g.teams[g.at].score += pts;
+  g.score += pts; g.possible += L.length; g.phase = "reveal";
 }
 function dlFinish(g) {
   g.teams[g.at].score += g.pts;
@@ -925,22 +927,24 @@ function dropPlayer(pid) {
   const g = S.g; if (!g.roster.includes(pid)) return;
   if (g.type === "rank") {
     const capPid = capId(g), wasCap = capPid === pid;
-    g.cap = g.cap % g.roster.length;
     g.roster = g.roster.filter(p => p !== pid);
-    if (!g.roster.length) { S.stage = "over"; return; }
-    g.cap = wasCap ? g.cap % g.roster.length : g.roster.indexOf(capPid);
+    g.teams.forEach(t => t.ids = t.ids.filter(p => p !== pid));
+    if (playing(g).length < 2 || (g.two && g.teams.some(t => t.ids.length < 2))) { S.stage = "over"; return; }
+    if (!wasCap) g.caps[g.at] = playing(g).indexOf(capPid);
     delete g.nums[pid]; delete g.seen[pid]; g.order = g.order.filter(p => p !== pid);
     if (wasCap && g.phase !== "reveal") { g.phase = "theme"; g.order = []; g.seen = {}; g.nums = {}; }
     else if (g.phase === "deal" && crew(g).every(p => g.seen[p])) g.phase = "order";
     else if (g.phase === "reveal") {
       g.rev = 0; g.applied = false; let hi = 0;
       g.flags = g.order.map(p => { const n = g.nums[p], ok = n > hi; if (ok) hi = n; return ok; });
-      const miss = g.flags.filter(f => !f).length; g.delta = miss ? -miss : 1;
+      const miss = g.flags.filter(f => !f).length; g.delta = miss ? -miss : 1; g.ok = g.flags.length - miss;
     }
   } else if (g.type === "lineup") {
     g.roster = g.roster.filter(p => p !== pid);
+    g.teams.forEach(t => t.ids = t.ids.filter(p => p !== pid));
     delete g.ans[pid];
-    if (g.phase === "answer" && g.roster.length && g.roster.every(p => g.ans[p] != null)) luStartPlacing(g);
+    if (!playing(g).length) { S.stage = "over"; return; }
+    if (g.phase === "answer" && playing(g).every(p => g.ans[p] != null)) luStartPlacing(g);
     else if (g.phase === "place") {
       const ti = g.turn.indexOf(pid);
       g.turn = g.turn.filter(p => p !== pid); g.line = g.line.filter(p => p !== pid);
@@ -1026,7 +1030,7 @@ function hostRoom(code, keepCode, tries = 0) {
         if (e.type === "unavailable-id" && !keepCode) hostRoom(newCode()).then(res, rej);
         else if (e.type === "unavailable-id" && tries < 6) setTimeout(() => hostRoom(code, true, tries + 1).then(res, rej), 3000);
         else if (e.type === "unavailable-id") rej(new Error("Room " + code + " is still in use. Try again in a minute, or start a new room."));
-        else rej(new Error("Couldn't open a room (" + (e.type || e.message) + ")."));
+        else rej(new Error(e.type === "browser-incompatible" ? NO_RTC : "Couldn't open a room (" + (e.type || e.message) + ")."));
       }
     });
     peer.on("disconnected", () => { setTimeout(() => { try { if (!peer.destroyed) peer.reconnect(); } catch (x) {} }, 1000); });
@@ -1074,7 +1078,8 @@ function joinRoom(code, name) {
     const fail = msg => { if (done) return; done = true; clearTimeout(timer); try { peer.destroy(); } catch (e) {} rej(new Error(msg)); };
     const timer = setTimeout(() => fail("Couldn't reach room " + code + ". Is the host's screen still open?"), 15000);
     peer.on("error", e => {
-      if (!done) fail(e.type === "peer-unavailable" ? "No room called " + code + ". Check the code, or ask the host to keep Nunchi open." : "Couldn't connect (" + (e.type || e.message) + ").");
+      if (!done) fail(e.type === "peer-unavailable" ? "No room called " + code + ". Check the code, or ask the host to keep Nunchi open."
+        : e.type === "browser-incompatible" ? NO_RTC : "Couldn't connect (" + (e.type || e.message) + ").");
     });
     peer.on("open", () => {
       const conn = peer.connect(PREFIX + code, { reliable: true });
@@ -1143,13 +1148,11 @@ const modeCard = k => {
   const m = MODES[k];
   return `<button class="mode" style="--mc:${m.color}" data-a="pick" data-v="${k}">
     <span class="swatch"></span><span class="blob"></span>
-    <span class="name">${m.name}</span><span class="like">${m.like}</span>
+    <span class="name">${m.name}</span>
     <span class="pitch">${m.pitch}</span>
-    <span class="meta">${m.meta.map(x => `<span class="pill">${x}</span>`).join("")}</span>
   </button>`;
 };
-const rulesBlock = k => `<ol class="rules">${MODES[k].rules.map(r => `<li><span>${r}</span></li>`).join("")}</ol>
-  <div class="example">${MODES[k].example}</div>`;
+const rulesBlock = k => `<ol class="rules">${MODES[k].rules.map(r => `<li><span>${r}</span></li>`).join("")}</ol>`;
 const wait = t => `<div class="wait">${t}</div>`;
 const roleLine = (ic, t) => `<div class="role"><span class="ic">${ic}</span><span>${t}</span></div>`;
 const peekBox = (secret, label) => `<div class="peek" tabindex="0" role="button" aria-label="Hold to reveal">
@@ -1158,14 +1161,14 @@ const peekBox = (secret, label) => `<div class="peek" tabindex="0" role="button"
 const seg = (k, opts, cur, editable, fmt) => `<div class="seg" role="group">${opts.map(o =>
   `<button data-a="set" data-k="${k}" data-v="${o}" aria-pressed="${String(o) === String(cur)}" ${editable ? "" : "disabled"}>${fmt ? fmt(o) : o}</button>`).join("")}</div>`;
 function settingsBlock(mode, set, editable) {
-  const r = [];
+  const r = [["Play as", seg("teams", [true, false], !!set.teams, editable, o => o ? "Two teams" : "All together")]];
+  const rl = set.teams ? "Rounds per team" : "Rounds";
   if (mode === "rank") {
-    r.push(["Rounds", seg("rounds", [3, 5, 8, 10], set.rounds, editable)]);
-    r.push(["Hearts", seg("hearts", [5, 7, 9], set.hearts, editable)]);
+    r.push([rl, seg("rounds", [3, 5, 8, 10], set.rounds, editable)]);
+    if (!set.teams) r.push(["Hearts", seg("hearts", [5, 7, 9], set.hearts, editable)]);
   } else if (mode === "lineup") {
-    r.push(["Rounds", seg("rounds", [4, 6, 8, 10], set.rounds, editable)]);
+    r.push([rl, seg("rounds", [3, 4, 6, 8], set.rounds, editable)]);
   } else {
-    r.push(["Play as", seg("teams", [true, false], set.teams, editable, o => o ? "Two teams" : "All together")]);
     if (set.teams) r.push(["First to", seg("goal", [6, 10, 14], set.goal, editable)]);
     else r.push(["Rounds", seg("rounds", [5, 7, 10], set.rounds, editable)]);
   }
@@ -1205,7 +1208,7 @@ function homeView() {
   const resumeMode = resumable ? (sv.role === "guest" ? sv.mode : sv.S.mode) : null;
   return `<section class="screen">
     <div class="brand"><h1>Nun<i>chi</i></h1>
-      <div class="ko"><b>눈치</b> (noon-chee): the art of reading the room.</div></div>
+      <div class="ko">Read the room to win the game</div></div>
     ${resumable ? `<button class="cta alt" data-a="resume">Resume ${MODES[resumeMode] ? MODES[resumeMode].name : ""} ${sv.role === "pass" ? "game" : "room"}<span class="sub">${sv.role === "guest" ? "Rejoin room " + esc(sv.code) : sv.role === "host" ? "Reopen your room " + esc(sv.S.code) : "Pick up where you left off"}</span></button>` : ""}
     <div class="eyebrow">Pick a game</div>
     <div class="modes">${Object.keys(MODES).map(modeCard).join("")}</div>
@@ -1216,19 +1219,19 @@ function modeView() {
   const k = U.pick, m = MODES[k];
   return `<section class="screen">
     <button class="topback" data-a="home">← All games</button>
-    <div><div class="display" style="font-size:clamp(52px,17vw,80px);color:var(--accent)">${m.name}</div>
-      <div class="row wrap" style="margin-top:10px"><span class="pill">${m.like}</span>${m.meta.map(x => `<span class="pill">${x}</span>`).join("")}</div></div>
+    <div><div class="display" style="font-size:clamp(52px,17vw,80px);color:var(--accent)">${m.name}</div></div>
     <div class="dim" style="font-size:16px;line-height:1.4">${m.pitch}</div>
     <div class="card stack"><div class="eyebrow">How to play</div>${rulesBlock(k)}</div>
     <div class="bottom">
       <button class="cta" data-a="goSetup">Play on one phone<span class="sub">Pass it around the room</span></button>
-      <button class="cta alt" data-a="goHost">Start a room<span class="sub">Everyone plays on their own phone</span></button>
+      <button class="cta alt" data-a="goHost" ${RTC_OK ? "" : "disabled"}>Start a room<span class="sub">Everyone plays on their own phone</span></button>
+      ${RTC_OK ? "" : `<div class="faint small center">${NO_RTC}</div>`}
     </div>
   </section>`;
 }
 function setupView() {
   const k = U.pick, m = MODES[k], set = U.sets[k], pp = U.pp;
-  const teamsOn = k === "dial" && set.teams;
+  const teamsOn = !!set.teams;
   const enough = pp.length >= m.min, tooMany = pp.length > m.max;
   return `<section class="screen">
     <button class="topback" data-a="pick" data-v="${k}">← ${m.name} rules</button>
@@ -1238,7 +1241,7 @@ function setupView() {
     <div class="plist">${pp.map(p => `<div class="p"><span class="nm">${esc(p.name)}</span>
       ${teamsOn ? `<button class="teambadge t${p.team || 0}" data-a="swapTeam" data-v="${p.id}">Team ${p.team ? "B" : "A"}</button>` : ""}
       <button class="x" data-a="rmName" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></div>`).join("") || `<div class="faint small center">Add at least ${m.min} players.</div>`}</div>
-    ${teamsOn && pp.length ? `<div class="faint small">Tap a team badge to switch teams.${pp.length < 4 ? " Two teams need 4+ players. Otherwise you'll play all together." : ""}</div>` : ""}
+    ${teamsOn && pp.length ? `<div class="faint small">Tap a team badge to switch teams.${pp.length < 2 * m.teamMin ? ` Two teams need ${2 * m.teamMin}+ players. Otherwise you'll play all together.` : ""}</div>` : ""}
     <div class="card">${settingsBlock(k, set, true)}</div>
     <div class="bottom">
       ${tooMany ? `<div class="err">${m.name} supports up to ${m.max} players.</div>` : ""}
@@ -1264,7 +1267,7 @@ function joinView() {
     <div class="field"><label for="joincode">Room code</label><input class="inp code" id="joincode" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${esc(U.drafts.joincode ?? U.joinCode)}" placeholder="ABCD"></div>
     <div class="field"><label for="joinname">Your name</label><input class="inp" id="joinname" maxlength="16" autocomplete="off" value="${esc(U.drafts.joinname ?? U.name)}" placeholder="Your name"></div>
     ${U.err ? `<div class="err">${esc(U.err)}</div>` : ""}
-    <div class="bottom"><button class="cta" data-a="joinRoom">Join</button></div>
+    <div class="bottom">${RTC_OK ? "" : `<div class="err">${NO_RTC}</div>`}<button class="cta" data-a="joinRoom" ${RTC_OK ? "" : "disabled"}>Join</button></div>
   </section>`;
 }
 function connectingView() {
@@ -1273,7 +1276,7 @@ function connectingView() {
 }
 function lobbyView() {
   const m = MODES[S.mode], set = S.sets[S.mode], host = ROLE === "host";
-  const teamsOn = S.mode === "dial" && set.teams;
+  const teamsOn = !!set.teams;
   const n = S.players.length, enough = n >= m.min, tooMany = n > m.max;
   return `<section class="screen">
     <div class="gtop"><span class="eyebrow grow">Room code</span><button class="ghost" data-a="share">Share invite</button>${host ? `<button class="ghost" data-a="closeRoom">Close</button>` : `<button class="ghost" data-a="leave">Leave</button>`}</div>
@@ -1291,7 +1294,7 @@ function lobbyView() {
       <span class="nm">${esc(p.name)} ${p.id === S.hostId ? "👑" : ""} ${p.id === ME ? `<span class="you">(you)</span>` : ""}</span>
       ${teamsOn ? `<button class="teambadge t${p.team || 0}" ${host ? `data-a="team" data-v="${p.id}"` : "disabled"}>Team ${p.team ? "B" : "A"}</button>` : ""}
       ${host && p.id !== S.hostId ? `<button class="x" data-a="kick" data-v="${p.id}" aria-label="Remove ${esc(p.name)}">×</button>` : ""}</div>`).join("")}</div>
-    ${teamsOn && n < 4 ? `<div class="faint small">Two teams need 4+ players. With fewer, you'll play all together.</div>` : ""}
+    ${teamsOn && n < 2 * m.teamMin ? `<div class="faint small">Two teams need ${2 * m.teamMin}+ players. With fewer, you'll play all together.</div>` : ""}
     <div class="card">${settingsBlock(S.mode, set, host)}</div>
     <div class="bottom">
       ${tooMany ? `<div class="err">${m.name} supports up to ${m.max} players. Remove someone or pick another game.</div>` : ""}
@@ -1306,7 +1309,8 @@ function rankView() {
   const g = S.g, [theme, lo, hi] = cardOf(g), cap = capId(g), others = crew(g);
   const themeCard = promptCard(`<div class="eyebrow">Theme</div><div class="t" style="margin-top:6px">${esc(theme)}</div>
     <div class="scale"><span><b>1</b>${esc(lo)}</span><span>${esc(hi)}<b>10</b></span></div>`);
-  let h = topbar(`Round ${g.round} of ${g.rounds}`) + `<div class="row"><span class="eyebrow grow">Team hearts</span>${hearts(g)}</div>`;
+  let h = g.two ? topbar(`${teamName(g.at)} · Round ${roundNo(g)} of ${g.rounds}`) + scoreboard(g)
+                : topbar(`Round ${g.round} of ${g.rounds}`) + `<div class="row"><span class="eyebrow grow">Team hearts</span>${hearts(g)}</div>`;
   if (!inGame()) return h + themeCard + spectator();
 
   if (g.phase === "theme") {
@@ -1327,6 +1331,7 @@ function rankView() {
     }
     h += themeCard;
     if (ME === cap) return h + wait(`Players are checking their numbers (${seenN}/${others.length})`) + hostHelp(others.filter(p => !g.seen[p]), "rkSeen");
+    if (!others.includes(ME)) return h + wait(`${teamName(g.at)} is checking their numbers (${seenN}/${others.length})`);
     if (!g.seen[ME]) return h + peekBox(g.nums[ME], "Press and hold to see your number") + `<div class="bottom"><button class="cta" data-a="rkSeen" data-v="${ME}">Got it</button></div>`;
     return h + wait(`Waiting for others (${seenN}/${others.length})`) + hostHelp(others.filter(p => !g.seen[p]), "rkSeen") + peekBox(g.nums[ME], "Forgot? Press and hold");
   }
@@ -1342,7 +1347,7 @@ function rankView() {
       if (ROLE === "pass") h += `<div class="row wrap"><span class="faint small grow">Forgot your number?</span>${others.map(p => `<button class="ghost" data-a="peekFor" data-v="${p}">${esc(nm(p))}</button>`).join("")}</div>`;
       h += `<div class="bottom"><button class="cta" data-a="rkLock" ${left.length ? "disabled" : ""}>${left.length ? `Rank ${left.length} more` : "Lock in the order"}</button></div>`;
     } else {
-      h += list + wait(`${esc(nm(cap))} is ranking everyone`) + peekBox(g.nums[ME], "Your number: press and hold");
+      h += list + wait(`${esc(nm(cap))} is ranking everyone`) + (others.includes(ME) ? peekBox(g.nums[ME], "Your number: press and hold") : "");
     }
     return h;
   }
@@ -1357,9 +1362,10 @@ function rankView() {
     if (!g.applied) h += `<div class="bottom"><button class="cta" data-a="rkReveal">Reveal next</button><button class="ghost" data-a="rkReveal" data-v="all">Reveal all</button></div>`;
     else {
       const miss = g.delta < 0 ? -g.delta : 0;
-      h += miss ? `<div class="banner bad"><span class="big">−${miss} ❤️</span>${miss} out of order</div>`
-                : `<div class="banner good"><span class="big">Perfect!</span>+1 heart</div>`;
-      const end = g.hearts <= 0 || g.round >= g.rounds;
+      if (g.two) h += `<div class="banner ${miss ? "neutral" : "good"}"><span class="big">+${g.ok}</span>${teamName(g.at)}</div>`;
+      else h += miss ? `<div class="banner bad"><span class="big">−${miss} ❤️</span>${miss} out of order</div>`
+                     : `<div class="banner good"><span class="big">Perfect!</span>+1 heart</div>`;
+      const end = turnsDone(g) || (!g.two && g.hearts <= 0);
       h += `<div class="bottom"><button class="cta" data-a="rkNext">${end ? "See how you did" : "Next round"}</button></div>`;
     }
     return h;
@@ -1376,32 +1382,34 @@ function hostHelp(pids, type) {
 /* ---------- LINE UP ---------- */
 function lineupView() {
   const g = S.g, [q, unit] = cardOf(g);
-  const qCard = promptCard(`<div class="eyebrow">Question ${g.round} of ${g.rounds}</div><div class="q" style="margin-top:8px">${esc(q)}</div>
+  const qCard = promptCard(`<div class="eyebrow">Question ${roundNo(g)} of ${g.rounds}</div><div class="q" style="margin-top:8px">${esc(q)}</div>
     <div class="scale"><span class="faint">Answer in: ${esc(unit)}</span></div>`);
-  let h = topbar(`Team score ${g.score}/${g.possible}`);
+  let h = g.two ? topbar(`${teamName(g.at)} · Round ${roundNo(g)} of ${g.rounds}`) + scoreboard(g) : topbar(`Team score ${g.score}/${g.possible}`);
+  const P = playing(g);
   if (!inGame()) return h + qCard + spectator();
-  const answered = g.roster.filter(p => g.ans[p] != null);
-  const status = `<div class="chips">${g.roster.map(p => `<span class="chip ${g.ans[p] != null ? "done" : ""}">${g.ans[p] != null ? "✓ " : ""}${esc(nm(p))}</span>`).join("")}</div>`;
+  const answered = P.filter(p => g.ans[p] != null);
+  const status = `<div class="chips">${P.map(p => `<span class="chip ${g.ans[p] != null ? "done" : ""}">${g.ans[p] != null ? "✓ " : ""}${esc(nm(p))}</span>`).join("")}</div>`;
   const input = pid => `<div class="field"><label for="ans-${pid}">Your real answer (${esc(unit)})</label>
     <input class="inp big" id="ans-${pid}" inputmode="decimal" autocomplete="off" placeholder="0" value="${esc(U.drafts["ans-" + pid] || "")}"></div>`;
 
   if (g.phase === "answer") {
     if (ROLE === "pass") {
-      const next = g.roster.find(p => g.ans[p] == null);
+      const next = P.find(p => g.ans[p] == null);
       return h + handoff(nm(next), "Pass the phone to", "Answer honestly. Nobody else should see this screen.") + qCard + input(next)
         + `<div class="bottom"><button class="cta" data-a="luAns" data-v="${next}">Lock in secretly</button>
-           <div class="faint small center">${answered.length}/${g.roster.length} answered</div></div>`;
+           <div class="faint small center">${answered.length}/${P.length} answered</div></div>`;
     }
     h += qCard;
+    if (!P.includes(ME)) return h + wait(`${teamName(g.at)} is answering (${answered.length}/${P.length})`) + status;
     if (g.ans[ME] == null) return h + input(ME) + `<div class="bottom"><button class="cta" data-a="luAns" data-v="${ME}">Lock in secretly</button></div>` + status;
-    return h + wait(`Locked in (${esc(g.ans[ME])}). Waiting for everyone (${answered.length}/${g.roster.length})`) + status
-      + (ROLE === "host" && g.roster.some(p => g.ans[p] == null && !online(p)) ? `<div class="faint small">Someone's offline? Remove them from the game in ⋯.</div>` : "");
+    return h + wait(`Locked in (${esc(g.ans[ME])}). Waiting for everyone (${answered.length}/${P.length})`) + status
+      + (ROLE === "host" && P.some(p => g.ans[p] == null && !online(p)) ? `<div class="faint small">Someone's offline? Remove them from the game in ⋯.</div>` : "");
   }
   if (g.phase === "place") {
     const cur = g.turn[g.ti];
     const canPlace = mine(cur);
     const showOwn = p => ROLE !== "pass" && p === ME;
-    h += promptCard(`<div class="eyebrow">Question ${g.round} of ${g.rounds}</div><div class="q" style="margin-top:6px;font-size:19px">${esc(q)}</div>`);
+    h += promptCard(`<div class="eyebrow">Question ${roundNo(g)} of ${g.rounds}</div><div class="q" style="margin-top:6px;font-size:19px">${esc(q)}</div>`);
     h += roleLine("👉", `<span><b>${esc(nm(cur))}</b>, ${canPlace ? "tap where you fit in the line." : "is choosing where they fit."} Talk it over!</span>`);
     let rows = `<div class="end">▲ Lowest</div>`;
     g.line.forEach((p, i) => {
@@ -1418,10 +1426,10 @@ function lineupView() {
   }
   if (g.phase === "reveal") {
     const pts = g.flags.filter(Boolean).length, n = g.line.length;
-    h += promptCard(`<div class="eyebrow">Question ${g.round} of ${g.rounds}</div><div class="q" style="margin-top:6px;font-size:19px">${esc(q)}</div>`);
+    h += promptCard(`<div class="eyebrow">Question ${roundNo(g)} of ${g.rounds}</div><div class="q" style="margin-top:6px;font-size:19px">${esc(q)}</div>`);
     h += `<div class="order"><div class="end">▲ Lowest</div>${g.line.map((p, i) => `<div class="slot ${g.flags[i] ? "ok" : "bad"}"><span class="n">${i + 1}</span><span class="nm">${esc(nm(p))}</span><span class="val">${esc(g.ans[p])}${g.flags[i] ? " ✓" : " ✗"}</span></div>`).join("")}<div class="end">▼ Highest</div></div>`;
     h += `<div class="banner ${pts === n ? "good" : pts >= n / 2 ? "neutral" : "bad"}"><span class="big">${pts}/${n}</span>${pts === n ? "Perfect line!" : "in the right spot"}</div>`;
-    h += `<div class="bottom"><button class="cta" data-a="luNext">${g.round >= g.rounds ? "See how you did" : "Next question"}</button></div>`;
+    h += `<div class="bottom"><button class="cta" data-a="luNext">${turnsDone(g) ? "See how you did" : "Next question"}</button></div>`;
     return h;
   }
   return h;
@@ -1503,8 +1511,7 @@ function dialView() {
   }
   if (g.phase === "reveal") {
     h += clue + dialSvg({ target: g.target, needle: g.dial }) + specRow(l, r);
-    const msg = { 4: "Bullseye!", 3: "So close!", 2: "In the zone", 0: "Missed it" }[g.pts];
-    h += `<div class="banner ${g.pts >= 3 ? "good" : g.pts ? "neutral" : "bad"}"><span class="big">${g.pts ? "+" + g.pts : "0"}</span>${msg}${g.two ? " · " + teamName(g.at) : ""}</div>`;
+    h += `<div class="banner ${g.pts >= 3 ? "good" : g.pts ? "neutral" : "bad"}"><span class="big">${g.pts ? "+" + g.pts : "0"}</span>${g.two ? teamName(g.at) : ""}</div>`;
     if (g.two && g.counter) h += `<div class="faint center">${teamName(1 - g.at)} guessed <b>${g.counter}</b>: ${g.bonus ? "right, +1 point" : "wrong, no bonus"}</div>`;
     const end = g.two ? g.teams.some(t => t.score >= g.goal) : g.round >= g.rounds;
     h += `<div class="bottom"><button class="cta" data-a="dlNext">${end ? "See results" : "Next round"}</button></div>`;
@@ -1517,7 +1524,11 @@ function dialView() {
 function overView() {
   const g = S.g, m = MODES[S.mode];
   let head = "", sub = "", good = true;
-  if (g.type === "rank") {
+  if (g.two) {
+    const [a, b] = g.teams.map(t => t.score);
+    head = a === b ? "It's a tie!" : `${teamName(a > b ? 0 : 1)} wins!`;
+    sub = `${a} – ${b}`;
+  } else if (g.type === "rank") {
     good = g.hearts > 0;
     head = good ? "You survived!" : "Out of hearts";
     sub = good ? `${g.hearts} heart${g.hearts === 1 ? "" : "s"} left after ${g.round} rounds` : `Made it to round ${g.round} of ${g.rounds}`;
@@ -1527,22 +1538,16 @@ function overView() {
     sub = `${g.score} of ${g.possible} placed right (${pct}%)`;
     good = pct >= 50;
   } else {
-    if (g.two) {
-      const [a, b] = g.teams.map(t => t.score);
-      head = a === b ? "It's a tie!" : `${teamName(a > b ? 0 : 1)} wins!`;
-      sub = `${a} – ${b}`;
-    } else {
-      const avg = g.teams[0].score / Math.max(1, g.round);
-      head = avg >= 3 ? "On the same wavelength" : avg >= 2 ? "Pretty in sync" : "Static on the line";
-      sub = `${g.teams[0].score} points in ${g.round} rounds`;
-      good = avg >= 2;
-    }
+    const avg = g.teams[0].score / Math.max(1, g.round);
+    head = avg >= 3 ? "On the same wavelength" : avg >= 2 ? "Pretty in sync" : "Static on the line";
+    sub = `${g.teams[0].score} points in ${g.round} rounds`;
+    good = avg >= 2;
   }
   const host = isHostDevice();
   return `<section class="screen" style="justify-content:center">
     <div class="center"><span class="mchip">${m.name}</span></div>
     <div class="banner ${good ? "good" : "bad"}"><span class="big">${esc(head)}</span>${esc(sub)}</div>
-    ${g.type === "dial" && g.two ? scoreboard(g) : ""}
+    ${g.two ? scoreboard(g) : ""}
     <div class="bottom">
       ${host ? `<button class="cta" data-a="again">Play ${m.name} again</button>
                 <button class="cta alt" data-a="${ROLE === "pass" ? "changeGame" : "lobby"}">${ROLE === "pass" ? "Pick another game" : "Back to the lobby"}</button>`
@@ -1558,7 +1563,7 @@ function sheetView() {
   let inner = "";
   if (s.k === "rules") {
     const k = s.mode;
-    inner = `<div class="row"><div class="display grow" style="font-size:34px;color:${MODES[k].color}">${MODES[k].name}</div><span class="pill">${MODES[k].like}</span></div>
+    inner = `<div class="row"><div class="display grow" style="font-size:34px;color:${MODES[k].color}">${MODES[k].name}</div></div>
       ${rulesBlock(k)}<button class="cta" data-a="close">Got it</button>`;
   } else if (s.k === "menu") {
     const off = ROLE === "host" && S && S.g && S.stage === "play" ? S.g.roster.filter(p => p !== ME) : [];

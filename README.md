@@ -1,14 +1,12 @@
 # Nunchi
 
-**눈치** (noon-chee): the art of reading the room. A phone-friendly party game with three ways to play:
+Read the room to win the game. A phone-friendly party game with three games in one:
 
-| Mode | Plays like | In a sentence |
-|---|---|---|
-| **Rank** | Top Ten | Everyone secretly gets 1–10, answers a theme to match, and the Captain ranks them. Co-op, with hearts. |
-| **Line Up** | Fun Facts | Answer a question about yourself in secret, then line up lowest to highest. Co-op. |
-| **Dial** | Wavelength | The Psychic gives one clue for a hidden spot on a spectrum, and the team turns the dial. Teams or co-op. |
+- **Top Ten:** answer to match your secret number from 1 to 10, then see if the Captain ranks you right.
+- **Fun Facts:** answer questions about yourselves in secret, then line up by how well you know each other.
+- **Wavelength:** one clue, one hidden target: read the Psychic's mind and turn the dial.
 
-Every mode shows its quick rules before you start, and the **?** button brings them back during play.
+Every game can be played all together or as two teams. Short rules show before you start, and the **?** button brings them back mid-game.
 
 ## Two ways to play
 - **One phone:** pass it around. Secrets hide behind press-and-hold peeks.
