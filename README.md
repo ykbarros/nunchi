@@ -11,12 +11,15 @@ Every game can be played co-op or as two teams. Short rules show before you star
 ## Two ways to play
 - **One phone:** pass it around. Secrets hide behind press-and-hold peeks.
 - **Rooms:** the host taps *Start a room* and shares the 4-letter code or invite link. Everyone joins on their own phone
-  and sees only their own secrets. Rooms are peer-to-peer (WebRTC via [PeerJS](https://peerjs.com/)), so there's no server to run.
+  and sees only their own secrets. Phones can be on any mix of wifi and mobile data: room messages go through public MQTT relays
+  over secure websockets (three at once, so one being down doesn't matter), so there's no server to run.
   The host's phone runs the game, so the host keeps Nunchi open. Anyone who drops can rejoin, and reloading a tab reconnects automatically.
+  Room traffic passes through those public relays, so treat names and answers as public.
 
 A single self-contained `index.html` with no build step. One-phone mode works offline once loaded.
 
 ## Dev notes
-- `?net=local` swaps PeerJS for a same-browser BroadcastChannel transport, so you can play a room across several tabs with no internet.
-- `?peerhost=127.0.0.1:9000` points PeerJS at a self-hosted PeerServer (`npx peer --port 9000`).
+- `?net=p2p` uses direct WebRTC links via [PeerJS](https://peerjs.com/) instead of the relays. `?relay=wss://…,wss://…` points at other MQTT-over-websocket relays.
+- `?net=local` swaps the network for a same-browser BroadcastChannel transport, so you can play a room across several tabs with no internet.
+- `?peerhost=127.0.0.1:9000` (with p2p) points PeerJS at a self-hosted PeerServer (`npx peer --port 9000`).
 - Decks live at the top of the second `<script>` in `index.html`, one prompt per line.
